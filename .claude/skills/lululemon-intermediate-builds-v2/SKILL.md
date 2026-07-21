@@ -13,10 +13,10 @@ Read **`findings/lululemon_intermediate_builds_v2_reference.md`** first. Executa
 
 | Intermediate | SQL |
 |---|---|
-| `store_intermediate` | `queries/sourcing/create_store_intermediate_historic_v2.sql` |
-| `product_intermediate` | `queries/sourcing/create_product_intermediate_historic_v2.sql` |
-| `inventory_intermediate` | `queries/sourcing/create_inventory_intermediate_historic_v2.sql` |
-| `transaction_intermediate` | `queries/sourcing/create_transaction_intermediate_historic_v2.sql` |
+| `store_intermediate` | `queries/Intermediate_table_builds/create_store_intermediate_historic_v2.sql` |
+| `product_intermediate` | `queries/Intermediate_table_builds/create_product_intermediate_historic_v2.sql` |
+| `inventory_intermediate` | `queries/Intermediate_table_builds/create_inventory_intermediate_historic_v2.sql` |
+| `transaction_intermediate` | `queries/Intermediate_table_builds/create_transaction_intermediate_historic_v2.sql` |
 
 ## Do not treat as current
 

@@ -4,7 +4,7 @@
 
 ## Status quo
 
-`product_intermediate` v2 (`queries/sourcing/create_product_intermediate_historic_v2.sql`) hardcodes `color_family` to `NULL`. Per `findings/lululemon_intermediate_builds_v2_reference.md`, the stated reason is "no integer lookup in feeds."
+`product_intermediate` v2 (`queries/Intermediate_table_builds/create_product_intermediate_historic_v2.sql`) hardcodes `color_family` to `NULL`. Per `findings/lululemon_intermediate_builds_v2_reference.md`, the stated reason is "no integer lookup in feeds."
 
 ## Finding
 
