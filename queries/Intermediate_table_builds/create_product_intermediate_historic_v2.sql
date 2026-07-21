@@ -49,6 +49,20 @@ pso_launch_dates AS (
     AND WP_FIRST_SELLING_DAY_ID != ''
     AND WP_FIRST_SELLING_DAY_ID != '\\N'
   GROUP BY 1
+),
+-- Text color family from product_attribute_so, bridged to PSO grain via style_option's primary
+-- style option (validated 2026-07-21: 0 grain conflicts, 87.58% coverage). See
+-- findings/product_intermediate_color_family_source_found.md.
+color_family_lookup AS (
+  SELECT
+    so.PLANNING_STYLE_OPTION_ID,
+    pas.COLOUR_FAMILY AS color_family
+  FROM `lululemon-01042025.lulu_sourcing_dev.product_attribute_so` pas
+  JOIN `lululemon-01042025.lulu_sourcing_dev.style_option` so
+    ON pas.STYLE_OPTION_ID = so.STYLE_OPTION_ID
+  WHERE so.IS_PRIMARY_STYLE_OPTION = 'true'
+    AND pas.COLOUR_FAMILY IS NOT NULL
+    AND TRIM(pas.COLOUR_FAMILY) NOT IN ('', '\\N')
 )
 -- Join PGH spine to sku_details, product_attribute_s, and PSO launch dates; project intermediate columns.
 SELECT
@@ -78,7 +92,7 @@ SELECT
   b.SIZE_NAME AS size,
   CAST(b.COLOR_CODE AS STRING) AS color_code,
   b.COLOR_NAME AS color_description,
-  CAST(NULL AS INT64) AS color_family,
+  cfl.color_family AS color_family,
   SAFE_CAST(b.SIZE_RANK AS INT64) AS ordering,
   b.SEASON_CODE AS season_code,
   ld.launch_date AS launch_date,
@@ -121,4 +135,6 @@ LEFT JOIN `lululemon-01042025.lulu_sourcing_dev.product_attribute_s` c
   ON a.STYLE_CODE = c.STYLE_ID
 LEFT JOIN pso_launch_dates ld
   ON a.PLANNING_STYLE_OPTION_CODE = ld.article_original
+LEFT JOIN color_family_lookup cfl
+  ON a.PLANNING_STYLE_OPTION_CODE = cfl.PLANNING_STYLE_OPTION_ID
 WHERE a.sku_id_code IS NOT NULL;

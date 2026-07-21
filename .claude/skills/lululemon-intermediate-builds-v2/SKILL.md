@@ -5,7 +5,7 @@ description: Canonical v2 intermediate build logic for Lululemon product, store,
 
 # Lululemon intermediate builds v2 (locked reference)
 
-`Locked: 2026-07-17.`
+`Locked: 2026-07-17.` `product_intermediate.color_family` resolved 2026-07-21 (validated on `_tmp_` only, not yet promoted to live).
 
 ## Source of truth
 
@@ -34,7 +34,7 @@ store → product → (inventory parallel) → transaction (needs product + stor
 1. **Date window:** `DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 2 YEAR), YEAR)` for inventory + transaction historic builds.
 2. **`product_code`:** `{SKU_ID}_{ECOMM|RETAIL}`; product build expands both channels; txn joins `store_intermediate.channel`.
 3. **No live promotion without `_tmp_` pre/post comparison** unless the user explicitly asks to rebuild production tables.
-4. **Blocked stubs stay blocked** until the reference doc and user sign-off say otherwise (e.g. `cost`, `color_family`, `location_attrib_squareft`, `special_classification`).
+4. **Blocked stubs stay blocked** until the reference doc and user sign-off say otherwise (e.g. `cost`, `location_attrib_squareft`, `special_classification`). `color_family` resolved 2026-07-21 — see below.
 5. **Periodic scripts** must be updated in the same change set when historic v2 logic changes.
 
 ## Quick blocked-column reminder
@@ -42,7 +42,7 @@ store → product → (inventory parallel) → transaction (needs product + stor
 | Table | Blocked |
 |---|---|
 | Store | `location_attrib_squareft` (0), `special_classification` (NULL) |
-| Product | `color_family` (NULL) |
+| Product | none remaining — `color_family` resolved 2026-07-21 via `product_attribute_so.COLOUR_FAMILY` bridged through `style_option` (STRING, ~92% fill; see `findings/product_intermediate_color_family_source_found.md`) |
 | Transaction | `cost` (zero feed), `launch_price`, `line_id`, freight/workstream/discount-adjacent stubs listed in v2 SQL header |
 
 When answering lineage or build questions, cite the reference doc and the relevant v2 SQL file; do not reconstruct logic from memory or old platform CSVs.

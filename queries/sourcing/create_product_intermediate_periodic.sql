@@ -5,6 +5,9 @@
 --
 -- Sources (all lulu_sourcing_dev):
 --   product_group_hierarchy, sku_details, product_attribute_s
+--   product_attribute_so, style_option (color_family only, added 2026-07-21 -- see
+--   findings/product_intermediate_color_family_source_found.md; not part of the
+--   incremental change-detection below, see color_family_lookup CTE comment)
 -- Incremental: SYNCSTARTDATETIME > filter_param on any feed; union affected SKU_IDs
 --   (attribute-only changes expand via STYLE rows in PGH)
 -- MERGE key: product_code (1,977,528 rows live; grain verified unique)
@@ -91,6 +94,22 @@ sku_cleaned AS (
     WHERE CAST(ID AS STRING) IN (SELECT sku_id FROM changed_sku_ids)
   ) b
   CROSS JOIN UNNEST(['ECOMM', 'RETAIL']) AS channel
+),
+-- Text color family from product_attribute_so, bridged to PSO grain via style_option's primary
+-- style option (same source as historic v2; see findings/product_intermediate_color_family_source_found.md).
+-- Known gap: product_attribute_so has no SYNCSTARTDATETIME (manually loaded, not yet in the
+-- Sourcing DAG), so its own changes can't trigger a periodic re-pull here — color_family only
+-- refreshes for SKUs already re-pulled via product_group_hierarchy/sku_details/product_attribute_s.
+color_family_lookup AS (
+  SELECT
+    so.PLANNING_STYLE_OPTION_ID,
+    pas.COLOUR_FAMILY AS color_family
+  FROM `lululemon-01042025.lulu_sourcing_dev.product_attribute_so` pas
+  JOIN `lululemon-01042025.lulu_sourcing_dev.style_option` so
+    ON pas.STYLE_OPTION_ID = so.STYLE_OPTION_ID
+  WHERE so.IS_PRIMARY_STYLE_OPTION = 'true'
+    AND pas.COLOUR_FAMILY IS NOT NULL
+    AND TRIM(pas.COLOUR_FAMILY) NOT IN ('', '\\N')
 )
 SELECT DISTINCT
   a.BRAND_NAME AS l0_name,
@@ -127,7 +146,7 @@ SELECT DISTINCT
   1 AS active_flag,
   CAST(b.COLOR_CODE AS STRING) AS color_code,
   b.COLOR_NAME AS color_description,
-  CAST(NULL AS INT64) AS color_family,
+  cfl.color_family AS color_family,
   CAST(NULL AS INT64) AS ordering,
   CAST(NULL AS DATE) AS launch_date,
   b.SEASON_CODE AS season_code,
@@ -151,6 +170,8 @@ LEFT JOIN sku_cleaned b
   ON a.sku_id_code = b.sku_id_code
 LEFT JOIN `lululemon-01042025.lulu_sourcing_dev.product_attribute_s` c
   ON a.STYLE_CODE = c.STYLE_ID
+LEFT JOIN color_family_lookup cfl
+  ON a.PLANNING_STYLE_OPTION_CODE = cfl.PLANNING_STYLE_OPTION_ID
 WHERE a.sku_id_code IS NOT NULL;
 
 MERGE `lululemon-01042025.lulu_sourcing_dev.product_intermediate` DL

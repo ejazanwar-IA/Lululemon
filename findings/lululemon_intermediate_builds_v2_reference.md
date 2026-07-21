@@ -1,6 +1,6 @@
 # Lululemon intermediate builds v2 (canonical reference)
 
-`Locked: 2026-07-17.` · Validated via pre/post `_tmp_20260717` tables in `lulu_sourcing_dev`.
+`Locked: 2026-07-17.` · Validated via pre/post `_tmp_20260717` tables in `lulu_sourcing_dev`. `product_intermediate.color_family` updated 2026-07-21 (see Section 2 and Promotion status below) — store/inventory/transaction unchanged since the 2026-07-17 lock.
 
 **Authority:** the four `queries/Intermediate_table_builds/create_*_intermediate_historic_v2.sql` files are the source of truth for historic rebuild logic. This doc is the human-readable index; when in doubt, read the SQL.
 
@@ -90,12 +90,13 @@ Schema: `lulu_sourcing_dev`
 
 ## 2. Product intermediate
 
-**Sources:** `product_group_hierarchy`, `sku_details`, `product_attribute_s`, `eligibility`
+**Sources:** `product_group_hierarchy`, `sku_details`, `product_attribute_s`, `eligibility`, `product_attribute_so`, `style_option` (`color_family` only, added 2026-07-21)
 
 **CTE flow:**
 - `pgh_pivot` — EAV pivot to wide hierarchy per `SKU_ID`
 - `pgh_cleaned` — `CROSS JOIN UNNEST(['ECOMM','RETAIL'])` → `sku_id_code`
 - `pso_launch_dates` — `MIN(WP_FIRST_SELLING_DAY_ID)` at PSO grain
+- `color_family_lookup` — `product_attribute_so.COLOUR_FAMILY` bridged to PSO grain via `style_option` (added 2026-07-21)
 - Join `sku_details` on `SKU_ID` only (no sku-side channel cross join)
 
 **Key derivations:**
@@ -105,17 +106,16 @@ Schema: `lulu_sourcing_dev`
 - `ordering`: `SAFE_CAST(sku_details.SIZE_RANK AS INT64)` (100% fill)
 - `launch_date`: eligibility PSO min first-sell (~53.53% row fill)
 - `gender`: **`PRODUCT_GENDER`** (not `GENDER`; intentional per sign-off)
+- `color_family`: `product_attribute_so.COLOUR_FAMILY`, joined via `style_option.PLANNING_STYLE_OPTION_ID` filtered to `IS_PRIMARY_STYLE_OPTION = 'true'` (added 2026-07-21; text, e.g. Black/Blue/Grey — type changed `INT64` → `STRING`, no integer lookup ever existed)
 - PA attrs (`flex_status`, `silhouette`, …): join `STYLE_CODE = STYLE_ID`
 
-**Still blocked:**
+**Resolved 2026-07-21:** `color_family` (was blocked, see "Still blocked" history below). Full investigation: [`product_intermediate_color_family_source_found.md`](product_intermediate_color_family_source_found.md).
 
-| Column | Value |
-|---|---|
-| `color_family` | `NULL` (no integer lookup in feeds) |
+**Still blocked (product):** none remaining as of 2026-07-21.
 
-**Post-rebuild fill highlights (1,977,528 rows):** `flex_status` 95.57%; `ordering` 100%; `launch_date` 53.53%; `gender` 26.57% (`PRODUCT_GENDER`); Drop styles 28.93% at SKU×channel
+**Post-rebuild fill highlights (1,977,528 rows):** `flex_status` 95.57%; `ordering` 100%; `launch_date` 53.53%; `gender` 26.57% (`PRODUCT_GENDER`); `color_family` 92.18% (added 2026-07-21); Drop styles 28.93% at SKU×channel
 
-**Validated temp tables:** `product_intermediate_prechange_tmp_20260717`, `product_intermediate_postchange_v2_tmp_20260717`
+**Validated temp tables:** `product_intermediate_prechange_tmp_20260717`, `product_intermediate_postchange_v2_tmp_20260717`, `product_intermediate_baseline_v2_tmp_20260721` (unedited v2, fresh raw data), `product_intermediate_postchange_v2_tmp_20260721` (with `color_family`) — 2026-07-21 comparison isolated the change cleanly: 0 rows differing on any other column, `color_family` 0% → 92.18%, 0 duplicate/conflicting `product_code`s. Note: `product_intermediate_prechange_tmp_20260721` (a snapshot of the *live* table) also confirmed the live table itself is stale versus fresh v2 output (e.g. `ordering` and `gender` already differed from a fresh run, unrelated to this change) — consistent with the "live tables not yet rebuilt to v2" status tracked separately.
 
 ---
 
@@ -171,13 +171,13 @@ Schema: `lulu_sourcing_dev`
 
 ---
 
-## Promotion status (as of 2026-07-17)
+## Promotion status (as of 2026-07-21)
 
 | Artifact | v2 aligned? |
 |---|---|
-| Historic v2 SQL files | Yes (canonical) |
-| Live `lulu_sourcing_dev.*_intermediate` tables | **Not yet rebuilt** from v2 (validated on `_tmp_` only) |
-| `create_*_intermediate_periodic.sql` | **Not yet updated** to match v2 |
+| Historic v2 SQL files | Yes (canonical); `product_intermediate`'s `color_family` updated 2026-07-21, still validated on `_tmp_` only (not yet promoted to live) |
+| Live `lulu_sourcing_dev.*_intermediate` tables | **Not yet rebuilt** from v2 (validated on `_tmp_` only) — confirmed still stale as of 2026-07-21 (live `product_intermediate` returns different `ordering`/`gender` values than a fresh v2 run, unrelated to the `color_family` change) |
+| `create_*_intermediate_periodic.sql` | **Not yet updated** to match v2, except `create_product_intermediate_periodic.sql`'s `color_family` piece (updated 2026-07-21 alongside the historic SQL, per the periodic-sync hard rule) |
 | Legacy workbench scripts (`store_master_intermediate_build.sql`, etc.) | Superseded by v2 historic paths |
 
 ---

@@ -1,6 +1,6 @@
 # Lululemon — Knowledge bank (morning revision)
 
-`Last updated: 2026-07-14 (SKU×store×week horizon revised to 26w).`
+`Last updated: 2026-07-21 (product_intermediate.color_family wired into v2, validated on _tmp_, not yet live).`
 
 **Purpose:** Single curated client-context doc for daily revision. Append-only when you ask the agent to add facts. No duplicate bullets for the same fact.
 
@@ -281,11 +281,12 @@ _New facts the agent adds appear here with `Added: YYYY-MM-DD`. Older sections a
 
 <!-- append zone -->
 
-### 2026-07-21: `product_intermediate.color_family` candidate source found in GCS
+### 2026-07-21: `product_intermediate.color_family` found, validated, and wired into v2 (not yet live)
 
-- **Blocked column, candidate unblock:** `product_attribute_so` (raw GCS feed, `consolidated/product_attribute_so/`) has a text `COLOUR_FAMILY` column, 88.22% filled (Black/Blue/Grey top values) in a 29,485-row sample — v2 `product_intermediate` never reads this feed, hence `color_family` stays hardcoded `NULL`.
-- **Join gap:** `product_attribute_so.PLANNING_STYLE_OPTION_ID` is 0% filled, so it can't join `product_intermediate.article_original` directly; needs a bridge through `style_option.csv` (`STYLE_OPTION_ID` ↔ `PLANNING_STYLE_OPTION_ID`), not yet validated for fill/grain.
-- **Not yet wired in** — write-up and next steps: [`product_intermediate_color_family_source_found.md`](product_intermediate_color_family_source_found.md).
+- **Resolved:** `color_family` (was hardcoded `NULL`/`INT64`) now sources from `product_attribute_so.COLOUR_FAMILY` (text: Black/Blue/Grey/...), bridged through `style_option` (`IS_PRIMARY_STYLE_OPTION = 'true'`) to the PSO grain. Type changed `INT64` → `STRING` — no integer lookup ever existed; matches the IA platform's OOTB `Color_Family` string convention.
+- **Wired into:** `queries/Intermediate_table_builds/create_product_intermediate_historic_v2.sql` and `queries/sourcing/create_product_intermediate_periodic.sql`. Validated via `_tmp_20260721`: 0 other columns drifted, `color_family` 0% → 92.18% fill, 0 conflicts. **Not yet promoted to the live table** — pending explicit go-ahead.
+- **Superseded an old, never-implemented plan:** `findings/lululemon_client_open_questions.md` had a note to derive `color_family` by parsing `color_description` instead — confirmed never built (`product_master_clean_view.sql` excludes it); real attribute data was used instead.
+- **Platform gap (separate, still open):** `product_attribute_so` base table wasn't in BQ (only `_seasonal` was) — loaded it manually via `LOAD DATA INTO ... FROM FILES(...)` (472,141 rows). One-time snapshot, no `SYNCSTARTDATETIME`; getting it into the real Sourcing DAG is still outstanding. Full write-up: [`product_intermediate_color_family_source_found.md`](product_intermediate_color_family_source_found.md).
 
 ### 2026-07-14: SKU×store×week eligibility horizon revised to 26 weeks
 
