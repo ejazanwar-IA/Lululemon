@@ -1,0 +1,16 @@
+{
+  "inventory_snapshot": {
+    "generated_at": "2026-06-01T06:57:23.685038+00:00",
+    "gcs_path": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inbound_drop_agent/test_drops/2026-06-02/inventory_snapshot_20260602140000.csv",
+    "row_count": null,
+    "size_gb": null,
+    "last_modified_at": null,
+    "column_names": [],
+    "column_types": {},
+    "duplicate_pct": null,
+    "join_orphans": {},
+    "sentinel_counts": {},
+    "verdict": "RED",
+    "brief_path": "findings/inbound_drop_agent/briefs/inventory_snapshot_20260602_1400.md"
+  }
+}

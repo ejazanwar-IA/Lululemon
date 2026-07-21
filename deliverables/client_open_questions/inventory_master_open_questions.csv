@@ -1,0 +1,10 @@
+S.no,Open Q,Source Data,Priority,Action Item,Response (Client),Notes
+1,History gap: inventory from Jan 2023; sales from Nov 2021 (~14 months missing),inventory_snapshot_cleaned,P0,Provide pre-2023 inventory snapshots,,Source gap A-2
+2,Sparse snapshot dates (33 dates / 33 months; 2024 gap),inventory_snapshot_cleaned,P0,Confirm expected cadence and backfill,,
+3,64M rows negative on-hand (min -3.7M); legitimate or bug?,inventory_snapshot,P1,Oversold/shrinkage vs data error? Filter rule?,,"D-1, F-8"
+4,8M ivivva inventory rows (deprecated brand),inventory_master,P1,Exclude from forecast / modeling?,,D-5
+5,Max on-hand = 700K at one SKU/store/date,inventory_snapshot,P2,DC aggregate or wholesale?,,D-4
+6,-1 in unit fields; sentinel semantics?,inventory_snapshot,P1,Define sentinel vs real negative,,
+7,Negative units inbound,inventory_snapshot,P2,Returns / reversals?,,
+8,Nov 2025 spike loads (50M+ rows); expected backfill?,inventory_snapshot,P2,,,
+9,Sales ≤ inventory per SKU-store-date (I11 check),transaction_master + inventory_master,P1,Confirm if violations are data bug or business event,,Cross-master QC

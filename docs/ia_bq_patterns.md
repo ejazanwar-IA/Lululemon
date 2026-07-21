@@ -1,0 +1,1 @@
+../findings/ia_bq_patterns.md

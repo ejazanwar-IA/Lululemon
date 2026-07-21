@@ -1,0 +1,157 @@
+site_name: Lululemon — Data Cleaning & EDA
+site_description: EDA findings, lineage, and anomaly tracking for the Lululemon data cleaning project.
+site_author: Ejaz Anwar
+copyright: Impact Analytics · Lululemon engagement
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: red
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.path
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+  icon:
+    repo: fontawesome/brands/github
+    admonition:
+      note: octicons/info-16
+      warning: octicons/alert-16
+      danger: octicons/stop-16
+
+plugins:
+  - search
+  - glightbox
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path:
+        - .
+        - queries
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - tables
+
+nav:
+  - Home: index.md
+
+  - Tables:
+      - Product Master:
+          - EDA Findings: product_master_eda.md
+          - Hierarchy decoded: product_master_hierarchy_decoded.md
+      - Transaction Master:
+          - EDA Findings: transaction_master_eda.md
+      - Inventory Master:
+          - EDA Findings: inventory_master_eda.md
+      - Store Master:
+          - EDA Findings: store_master_eda.md
+          - Location Audit: location_audit.md
+      - Fiscal Calendar:
+          - EDA Findings: fiscal_calendar_eda.md
+
+  - Anomalies:
+      - Status Index: anomaly_status_with_verification_sql.md
+      - P0 / P1 Deep Dive: consolidated_p0_p1_issues.md
+
+  - Pipeline & Lineage:
+      - End-to-end ingestion: lululemon_ingestion_end_to_end.md
+      - IA BQ Patterns (Signet baseline): ia_bq_patterns.md
+      - Raw → Master Lineage: raw_to_master_lineage.md
+      - Master Table Build Logic: master_table_build_logic.md
+
+  - Reference:
+      - Schema Inventory: schema_inventory.md
+      - Dataset Inventory: dataset_inventory.md
+      - Master Table Checklist: master_table_checklist.md
+      - SQL Queries:
+          - Overview: queries/index.md
+          - Schema & Inventory: queries/schema_inventory_queries.md
+          - EDA — Product Master: queries/product_master_queries.md
+          - EDA — Transaction Master: queries/transaction_master_queries.md
+          - EDA — Inventory Master: queries/inventory_master_queries.md
+          - EDA — Store Master: queries/store_master_queries.md
+          - EDA — Fiscal Calendar: queries/fiscal_calendar_queries.md
+          - Raw Verification: queries/raw_verification_queries.md
+          - DE Review — Stage 1: queries/de_review_stage1_queries.md
+          - Product Master Clean View: queries/product_master_clean_view.md
+
+  - Reviews & Decisions:
+      - DE Review — Stage 1 WIP: de_review_stage1_wip.md
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/solid/envelope
+      link: mailto:ejaz.anwar@impactanalytics.co
+      name: Email Ejaz
+    - icon: fontawesome/brands/atlassian
+      link: https://impactanalytics-team-i26gzg0e.atlassian.net/wiki/spaces/~7120208879ed2e673641b6b354fc145398edd5/pages/557057
+      name: Confluence hub
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  - assets/js/mermaid-init.js
+
+extra_css:
+  - assets/css/extra.css

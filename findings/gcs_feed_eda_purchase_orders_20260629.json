@@ -1,0 +1,331 @@
+{
+  "column_count": 15,
+  "column_population": {
+    "DATE_CREATED": {
+      "missing": 380,
+      "missing_pct": 0.0037,
+      "nonnull": 10401123,
+      "nonnull_pct": 99.9963
+    },
+    "DATE_EXPECTED_DELIVERY": {
+      "missing": 19,
+      "missing_pct": 0.0002,
+      "nonnull": 10401484,
+      "nonnull_pct": 99.9998
+    },
+    "DATE_RECEIVED": {
+      "missing": 1715409,
+      "missing_pct": 16.4919,
+      "nonnull": 8686094,
+      "nonnull_pct": 83.5081
+    },
+    "DATE_SCHEDULED": {
+      "missing": 3594,
+      "missing_pct": 0.0346,
+      "nonnull": 10397909,
+      "nonnull_pct": 99.9654
+    },
+    "DATE_SHIPPED": {
+      "missing": 1542331,
+      "missing_pct": 14.828,
+      "nonnull": 8859172,
+      "nonnull_pct": 85.172
+    },
+    "LOCATION_ID_RECEIVING": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "PO_LINE_STATUS": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "PURCHASE_ORDER_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "SKU_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "TYPE_NAME": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "UNITS_ALLOCATED": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "UNITS_AVAILABLE": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "UNITS_ORDERED": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "UNITS_RECEIVED": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    },
+    "UNITS_SHIPPED": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 10401503,
+      "nonnull_pct": 100.0
+    }
+  },
+  "columns": [
+    "PURCHASE_ORDER_ID",
+    "SKU_ID",
+    "LOCATION_ID_RECEIVING",
+    "UNITS_ORDERED",
+    "UNITS_SHIPPED",
+    "UNITS_RECEIVED",
+    "UNITS_ALLOCATED",
+    "UNITS_AVAILABLE",
+    "DATE_CREATED",
+    "DATE_SCHEDULED",
+    "DATE_SHIPPED",
+    "DATE_EXPECTED_DELIVERY",
+    "DATE_RECEIVED",
+    "PO_LINE_STATUS",
+    "TYPE_NAME"
+  ],
+  "date_ranges": {
+    "DATE_CREATED": {
+      "max": "2025-11-18",
+      "min": "2001-09-09"
+    },
+    "DATE_EXPECTED_DELIVERY": {
+      "max": "2031-01-01",
+      "min": "2016-11-01"
+    },
+    "DATE_RECEIVED": {
+      "max": "2025-11-18",
+      "min": "2016-11-01"
+    },
+    "DATE_SCHEDULED": {
+      "max": "2032-12-14",
+      "min": "2001-09-19"
+    },
+    "DATE_SHIPPED": {
+      "max": "2025-11-24",
+      "min": "2016-09-28"
+    }
+  },
+  "distinct_estimates": {
+    "po_sku": 10437133,
+    "po_sku_location": 10303255,
+    "purchase_orders": 1485364,
+    "skus": 673830
+  },
+  "feed": "purchase_orders",
+  "files_scanned": 16,
+  "future_counts": {
+    "DATE_CREATED": {
+      "pct": 0.0,
+      "rows": 0
+    },
+    "DATE_EXPECTED_DELIVERY": {
+      "pct": 0.1938,
+      "rows": 20155
+    }
+  },
+  "grain_check": {
+    "distinct_estimate": 10303255,
+    "duplicate_pct_estimate": 0.9446,
+    "duplicate_rows_estimate": 98248,
+    "grain_name": "po_sku_location",
+    "row_count": 10401503
+  },
+  "missing_columns_expected": [],
+  "notes": {
+    "approx_distinct": "Distinct counts use KMV approximate distinct sketches for memory safety."
+  },
+  "numeric": {
+    "UNITS_ALLOCATED": {
+      "avg": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 0.0,
+      "min": 0.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 0,
+      "positive_pct": 0.0,
+      "sum": 0.0,
+      "zero": 10401503,
+      "zero_pct": 100.0
+    },
+    "UNITS_AVAILABLE": {
+      "avg": 86.7833,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 142774.0,
+      "min": 0.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 8665276,
+      "positive_pct": 83.3079,
+      "sum": 902676763.0,
+      "zero": 1736227,
+      "zero_pct": 16.6921
+    },
+    "UNITS_ORDERED": {
+      "avg": 92.1173,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 142774.0,
+      "min": 0.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 9300838,
+      "positive_pct": 89.4182,
+      "sum": 958158519.0,
+      "zero": 1100665,
+      "zero_pct": 10.5818
+    },
+    "UNITS_RECEIVED": {
+      "avg": 87.6051,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 143254.0,
+      "min": 0.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 8681717,
+      "positive_pct": 83.466,
+      "sum": 911224751.0,
+      "zero": 1719786,
+      "zero_pct": 16.534
+    },
+    "UNITS_SHIPPED": {
+      "avg": 5.334,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 22205.0,
+      "min": 0.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 644179,
+      "positive_pct": 6.1931,
+      "sum": 55481756.0,
+      "zero": 9757324,
+      "zero_pct": 93.8069
+    }
+  },
+  "prefix": "gs://client_data_lululemon/Historic/s3_to_gcs/consolidated/purchase_orders/",
+  "rows": 10401503,
+  "sample_rows": [
+    {
+      "DATE_CREATED": "2025-11-18",
+      "DATE_EXPECTED_DELIVERY": "2026-05-04",
+      "DATE_RECEIVED": "",
+      "DATE_SCHEDULED": "2026-02-23",
+      "DATE_SHIPPED": "",
+      "LOCATION_ID_RECEIVING": "99056",
+      "PO_LINE_STATUS": "APPROVED",
+      "PURCHASE_ORDER_ID": "20224052",
+      "SKU_ID": "158573022",
+      "TYPE_NAME": "PURCHASE_ORDER",
+      "UNITS_ALLOCATED": "0",
+      "UNITS_AVAILABLE": "0",
+      "UNITS_ORDERED": "1",
+      "UNITS_RECEIVED": "0",
+      "UNITS_SHIPPED": "1"
+    },
+    {
+      "DATE_CREATED": "2025-11-18",
+      "DATE_EXPECTED_DELIVERY": "2026-05-04",
+      "DATE_RECEIVED": "",
+      "DATE_SCHEDULED": "2026-02-23",
+      "DATE_SHIPPED": "",
+      "LOCATION_ID_RECEIVING": "66026",
+      "PO_LINE_STATUS": "APPROVED",
+      "PURCHASE_ORDER_ID": "20223893",
+      "SKU_ID": "158846900",
+      "TYPE_NAME": "PURCHASE_ORDER",
+      "UNITS_ALLOCATED": "0",
+      "UNITS_AVAILABLE": "0",
+      "UNITS_ORDERED": "23",
+      "UNITS_RECEIVED": "0",
+      "UNITS_SHIPPED": "23"
+    },
+    {
+      "DATE_CREATED": "2025-11-18",
+      "DATE_EXPECTED_DELIVERY": "2026-05-10",
+      "DATE_RECEIVED": "",
+      "DATE_SCHEDULED": "2026-03-02",
+      "DATE_SHIPPED": "",
+      "LOCATION_ID_RECEIVING": "99096",
+      "PO_LINE_STATUS": "APPROVED",
+      "PURCHASE_ORDER_ID": "20224449",
+      "SKU_ID": "158924636",
+      "TYPE_NAME": "PURCHASE_ORDER",
+      "UNITS_ALLOCATED": "0",
+      "UNITS_AVAILABLE": "0",
+      "UNITS_ORDERED": "75",
+      "UNITS_RECEIVED": "0",
+      "UNITS_SHIPPED": "75"
+    }
+  ],
+  "top_values": {
+    "PO_LINE_STATUS": [
+      {
+        "pct": 83.7461,
+        "rows": 8710858,
+        "value": "CLOSED"
+      },
+      {
+        "pct": 9.8386,
+        "rows": 1023364,
+        "value": "CANCELLED"
+      },
+      {
+        "pct": 4.7482,
+        "rows": 493883,
+        "value": "APPROVED"
+      },
+      {
+        "pct": 1.3621,
+        "rows": 141679,
+        "value": "SHIPPED"
+      },
+      {
+        "pct": 0.2221,
+        "rows": 23102,
+        "value": "FULLY RECEIVED"
+      },
+      {
+        "pct": 0.0828,
+        "rows": 8617,
+        "value": "PARTIALLY RECEIVED"
+      }
+    ],
+    "TYPE_NAME": [
+      {
+        "pct": 100.0,
+        "rows": 10401503,
+        "value": "PURCHASE_ORDER"
+      }
+    ]
+  }
+}

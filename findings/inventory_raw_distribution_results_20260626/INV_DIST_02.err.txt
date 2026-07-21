@@ -1,0 +1,4 @@
+
+BigQuery error in query operation: Error processing job 'lululemon-data-
+scan:bqjob_r60211118d8899707_0000019f03431aaf_1': Job execution was cancelled:
+User requested cancellation

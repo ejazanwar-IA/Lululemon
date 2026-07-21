@@ -1,0 +1,54 @@
+# View profiles for Inbound Drop Agent (IA GCS `view` name → BQ EDA targets).
+# gcs_view: name in YYYY-MM-DD/<view>_YYYYMMDDHHMMSS.csv paths (view_mapping_table.view)
+
+defaults:
+  billing_project: lululemon-data-scan
+  gcp_project: lululemon-01042025
+
+views:
+  inventory_snapshot:
+    gcs_view: inventory_snapshot
+    bq_table: inventory_snapshot_cleaned
+    # Primary: post-sourcing DAG table (periodic intermediates read this)
+    bq_dataset: lulu_sourcing_dev
+    # Legacy raw landing (use SQL pack if profiling pre-DAG file-only drop)
+    bq_dataset_raw: lululemon_souricng_outbound
+    description: Daily inventory snapshot — inventory_master + periodic intermediate
+    date_column: DATE
+    grain_columns:
+      - SKU_ID_CHANNEL
+      - LOCATION_ID
+      - DATE
+    string_sentinel_columns:
+      - CHANNEL
+      - SKU_ID_CHANNEL
+    partition_hint: Always filter on DATE before wide scans.
+    join_checks:
+      - label: sku_in_product_master
+        left_key: SKU_ID_CHANNEL
+        right_table: lulu_ingestion_dev.product_master
+        right_key: product_code
+        sample_date: "2025-08-28"
+        note: Channel-suffix join policy may affect orphan %.
+
+  sales_transactions:
+    gcs_view: sales_transactions
+    bq_table: sales_transactions_4y_cleaned_20251119
+    bq_dataset: lululemon_souricng_outbound
+    description: Sales transactions — transaction_master source
+    date_column: null
+    grain_columns:
+      - sku_id_channel
+      - store_code
+    partition_hint: Run INFORMATION_SCHEMA first; set date_column in profile after confirm.
+
+  sku_details:
+    gcs_view: sku_details
+    bq_table: sku_details_cleaned
+    bq_dataset: lululemon_souricng_outbound
+    description: SKU / product attribute feed
+    grain_columns:
+      - ID
+    string_sentinel_columns:
+      - STYLE_ID
+      - ITEM_ID

@@ -1,0 +1,10 @@
+# Committed test config for local smoke tests (no secrets).
+sources:
+  test_local:
+    type: local
+    drops_dir: "findings/inbound_drop_agent/test_drops"
+
+defaults:
+  poll_interval_seconds: 60
+  view_allowlist:
+    - inventory_snapshot

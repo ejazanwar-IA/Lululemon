@@ -1,0 +1,78 @@
+-- Build fiscal_date_mapping (master #5) from calendar_hierarchy
+-- Source: reference_docs/Lululemon/Master Table Build Logic/master_table_build_queries_20251119.csv
+-- Canonical destination: lulu_ingestion_dev (matches product/store/txn/inv masters)
+-- Run as: bq query --project_id=lululemon-data-scan --use_legacy_sql=false < queries/build_fiscal_date_mapping.sql
+--
+-- Pre-flight (read-only via lululemon-data-scan OK):
+--   SELECT COUNT(*) FROM `lululemon-01042025.lululemon_souricng_outbound.calendar_hierarchy`;  -- expect 4746
+--
+-- Verified 2026-05-21: table already exists in lulu_ingestion_dev (4746 rows, date PK clean).
+-- Pipeline runbook: findings/fiscal_date_mapping_pipeline.md
+-- Sourcing intermediate (run first): queries/sourcing/create_fiscal_calendar_intermediate_full.sql
+-- Re-run only after calendar_hierarchy refresh or column/schema change.
+
+CREATE OR REPLACE TABLE `lululemon-01042025.lulu_ingestion_dev.fiscal_date_mapping` AS
+SELECT
+  quarter_desc AS fiscal_quarter_name,
+  QUARTER_KEY AS fiscal_quarter_name_abb,
+  YEAR_ID * 100 + QUARTER_NUMBER AS fiscal_year_quarter,
+  REGEXP_REPLACE(CAST(DAY_ID AS STRING), '[^0-9]', '') AS date_id,
+  UPPER(FORMAT_DATE('%A', DAY_ID)) AS fiscal_day_name,
+  ROW_NUMBER() OVER (PARTITION BY YEAR_ID * 100 + QUARTER_NUMBER ORDER BY DAY_ID) AS fiscal_day_in_quarter,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID * 100 + QUARTER_NUMBER ORDER BY YEAR_ID * 100 + MONTH_NUMBER) AS fiscal_month_in_quarter,
+  YEAR_ID * 100 + DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY WEEK_ID) - 100 AS fiscal_prior_year_comp_week,
+  DAY_ID AS calendar_date,
+  RANK() OVER (PARTITION BY YEAR_ID ORDER BY DAY_ID) AS fiscal_day_in_year,
+  FORMAT_DATE('%B', PARSE_DATE('%b', SPLIT(MONTH_DESC, ' ')[OFFSET(1)])) AS fiscal_month_name,
+  SPLIT(MONTH_DESC, ' ')[OFFSET(1)] AS fiscal_month_name_abb,
+  YEAR_ID * 100 + MONTH_NUMBER AS fiscal_year_period,
+  DAY_NUMBER AS fiscal_day_in_week,
+  YEAR_ID * 100 + MONTH_NUMBER AS fiscal_year_month,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY WEEK_ID) AS fiscal_week_in_year,
+  MONTH_NUMBER AS fiscal_month,
+  WEEK_NUMBER AS fiscal_week,
+  YEAR_ID AS fiscal_year,
+  WEEK_ID AS fiscal_year_week,
+  MIN(DAY_ID) OVER (PARTITION BY WEEK_ID) AS fiscal_week_begin_date,
+  MAX(DAY_ID) OVER (PARTITION BY WEEK_ID) AS fiscal_week_end_date,
+  MIN(DAY_ID) OVER (PARTITION BY YEAR_ID * 100 + MONTH_NUMBER) AS fiscal_month_begin_date,
+  MIN(DAY_ID) OVER (PARTITION BY YEAR_ID * 100 + QUARTER_NUMBER) AS fiscal_quarter_begin_date,
+  MAX(DAY_ID) OVER (PARTITION BY YEAR_ID * 100 + QUARTER_NUMBER) AS fiscal_quarter_end_date,
+  MIN(DAY_ID) OVER (PARTITION BY YEAR_ID) AS fiscal_year_begin_date,
+  MAX(DAY_ID) OVER (PARTITION BY YEAR_ID) AS fiscal_year_end_date,
+  QUARTER_NUMBER AS fiscal_quarter,
+  ROW_NUMBER() OVER (PARTITION BY YEAR_ID ORDER BY DAY_ID) AS fiscal_day,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID * 100 + MONTH_NUMBER ORDER BY WEEK_ID) AS fiscal_week_in_month,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID * 100 + QUARTER_NUMBER ORDER BY WEEK_ID) AS fiscal_week_in_quarter,
+  LEFT(UPPER(FORMAT_DATE('%A', DAY_ID)), 3) AS fiscal_day_name_abb,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY YEAR_ID * 100 + MONTH_NUMBER) AS fiscal_month_in_year,
+  DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY YEAR_ID * 100 + QUARTER_NUMBER) AS fiscal_quarter_in_year,
+  CASE WHEN UPPER(FORMAT_DATE('%A', DAY_ID)) IN ('SATURDAY', 'SUNDAY') THEN 'N' ELSE 'Y' END AS weekday_indicator,
+  ROW_NUMBER() OVER (PARTITION BY YEAR_ID * 100 + MONTH_NUMBER ORDER BY DAY_ID) AS fiscal_day_in_month,
+  DAY_ID AS date,
+  LAG(WEEK_ID, 7) OVER (ORDER BY WEEK_ID) AS fiscal_year_week_prior,
+  CAST(NULL AS INT64) AS fiscal_month_in_season,
+  CASE
+    WHEN ROUND(DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY WEEK_ID) / 2, 0) > 26 THEN 26
+    ELSE ROUND(DENSE_RANK() OVER (PARTITION BY YEAR_ID ORDER BY WEEK_ID) / 2, 0)
+  END AS fiscal_bi_week,
+  ROW_NUMBER() OVER (PARTITION BY WEEK_ID ORDER BY DAY_ID) AS day_of_week,
+  CAST(NULL AS INT64) AS fiscal_year_quarter_prior,
+  SEASON_CODE AS fiscal_year_season,
+  CAST(NULL AS STRING) AS fiscal_year_season_prior,
+  CAST(NULL AS INT64) AS fiscal_quarter_in_season,
+  CAST(NULL AS INT64) AS fiscal_week_in_season,
+  MAX(DAY_ID) OVER (PARTITION BY YEAR_ID * 100 + MONTH_NUMBER) AS fiscal_month_end_date,
+  CAST(NULL AS INT64) AS fiscal_year_week_2wa,
+  MIN(DAY_ID) OVER (PARTITION BY SEASON_CODE) AS fiscal_season_begin_date,
+  CAST(NULL AS INT64) AS fiscal_season_in_year,
+  MAX(DAY_ID) OVER (PARTITION BY SEASON_CODE) AS fiscal_season_end_date,
+  RANK() OVER (PARTITION BY SEASON_CODE ORDER BY DAY_ID ASC) AS fiscal_day_in_season,
+  CAST(NULL AS INT64) AS fiscal_year_month_prior,
+  CAST(NULL AS STRING) AS fiscal_season_name,
+  CAST(NULL AS STRING) AS fiscal_season_name_abb,
+  CAST(NULL AS INT64) AS fiscal_year_week_3wa,
+  CAST(NULL AS STRING) AS holiday,
+  CAST(NULL AS INT64) AS fiscal_year_qtr,
+  CAST(NULL AS STRING) AS trend
+FROM `lululemon-01042025.lululemon_souricng_outbound.calendar_hierarchy`;

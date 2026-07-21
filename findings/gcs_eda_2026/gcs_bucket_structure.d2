@@ -1,0 +1,83 @@
+# gs://client_data_lululemon/ - GCS bucket structure
+# Render: D2 extension (Terrastruct) or `d2 --watch gcs_bucket_structure.d2`
+
+direction: right
+
+bucket: "GCS Bucket\n(client_data_lululemon)" {style.fill: "#B3B3B3"; style.bold: true}
+
+# Level 1 folders
+clustering: "Clustering_Latest/" {style.fill: "#B3B3B3"}
+test: "test/ (empty)" {style.fill: "#B3B3B3"}
+foundation: "FOUNDATION_DATA/"
+historic: "Historic/"
+
+bucket -> clustering
+bucket -> test
+bucket -> foundation
+bucket -> historic
+
+# Clustering branch
+clustcsv: "Clustering_Latest.csv\n(single file)"
+findings: |md
+  ### Clustering_Latest.csv - key findings
+  - Grain: workstream x L2 x store (2,236 rows, 0 dup keys)
+  - Cols (8): workstream, l2_name, aur, quantity_sold, revenue, cluster_name, labels, store_code
+  - 2 workstreams: US Retail (1,916), Canada Retail (320)
+  - 551 stores, 47 clusters
+  - 5 L2: Accessories / Footwear / Mens / Womens (~550 each), Others (35)
+  - Clusters: 24 US + 23 Canada; 8-11 per L2
+  - labels = cluster number within group (1-8)
+  - Metrics min/max/avg: AUR 3/218/85; Qty 1/5,754/643; Revenue $4/$484K/$50K
+  - = store-clustering model output; store_code zero-padded 10-digit
+| {style.fill: "#FFF4CE"}
+clustering -> clustcsv
+clustcsv -> findings
+
+# Foundation branch
+exports: "exports/"
+ch: "CH/\nweek.csv (1 shard)"
+lh: "LH/\nlocation_hierarchy.csv (4 shards)"
+slsinv: "SLS_INV/\nsales_inventory.csv (40 shards, 8.5GB)"
+foundnote: "shard pattern:\nname.csv_a_b_0.csv (no date)" {style.stroke-dash: 3; style.fill: "#F5F5F5"}
+foundation -> exports
+exports -> ch
+exports -> lh
+exports -> slsinv
+exports -> foundnote: {style.stroke-dash: 3}
+
+# Historic branch
+s3: "s3_to_gcs/"
+batch: "BATCH_DATE/\n8 batches: 2025-08-28 .. 2026-05-08\n(2026-05-08 = flat sample)"
+consolidated: "consolidated/\n35 feeds, ~1.3 TB\n(feed-centric canonical copy)"
+stdCons: "inventory_snapshot/*.csv\nsku_details/*.csv\n..."
+anaCons: "anaplan/subfeed/new/pod_id=N/\n(Anaplan exception)"
+manifest: "_manifest/feed_sources.csv"
+sampleFlat: "2026-05-08/\nflat CSVs at root\n(sample subset)" {style.fill: "#B3B3B3"}
+outbound: "outbound/"
+feed: "feed/\n(38 standard feeds)"
+anaplan: "anaplan/"
+statusnew: "new/ (default status)"
+statusproc: "processed/ or temp/\n(a few feeds)"
+filepat: "feed_YYYYMMDD_HHMMSS_a_b_c.csv" {style.stroke-dash: 3; style.fill: "#F5F5F5"}
+subfeed: "subfeed/\n(demand_forecast, allocation_calender, ...)"
+ananew: "new/"
+pod: "pod_id=N/"
+anafile: "TE2.0_EA_*.csv /\nInventory_Parameters_*.csv" {style.stroke-dash: 3; style.fill: "#F5F5F5"}
+
+historic -> s3
+s3 -> batch
+s3 -> consolidated
+consolidated -> stdCons
+consolidated -> anaCons
+consolidated -> manifest
+batch -> outbound
+batch -> sampleFlat
+outbound -> feed
+outbound -> anaplan
+feed -> statusnew
+feed -> statusproc
+statusnew -> filepat
+anaplan -> subfeed
+subfeed -> ananew
+ananew -> pod
+pod -> anafile

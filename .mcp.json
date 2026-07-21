@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+    "atlassian-mcp": {
+      "url": "https://mcp.atlassian.com/v1/mcp/authv2"
+    },
+    "notion": {
+      "url": "https://mcp.notion.com/mcp"
+    },
+    "postgres-eu-puma-prod": {
+      "command": "/opt/homebrew/bin/python3.13",
+      "args": [
+        "/Users/ejazanwarmd/.cursor/mcp-servers/postgres_readonly_mcp.py"
+      ],
+      "env": {
+        "PG_ENV_FILE": "/Users/ejazanwarmd/Desktop/Tapestry/.cursor/secrets/eu_prod_postgres.env",
+        "PG_TOOL_PREFIX": "puma_eu_pg",
+        "PG_SERVER_LABEL": "EU Prod generic_allocation_tool_puma"
+      }
+    },
+    "postgres-coach-na-test": {
+      "command": "/opt/homebrew/bin/python3.13",
+      "args": [
+        "/Users/ejazanwarmd/.cursor/mcp-servers/postgres_readonly_mcp.py"
+      ],
+      "env": {
+        "PG_ENV_FILE": "/Users/ejazanwarmd/Desktop/Tapestry/.cursor/secrets/coach_na_test_postgres.env",
+        "PG_TOOL_PREFIX": "coach_na_pg",
+        "PG_SERVER_LABEL": "Coach NA Test coach_na_test"
+      }
+    },
+    "postgres-lulu-dev": {
+      "command": "/opt/homebrew/bin/python3.13",
+      "args": [
+        "/Users/ejazanwarmd/.cursor/mcp-servers/postgres_readonly_mcp.py"
+      ],
+      "env": {
+        "PG_ENV_FILE": "/Users/ejazanwarmd/Desktop/Lululemon/.cursor/secrets/lulu_dev_postgres.env",
+        "PG_TOOL_PREFIX": "lulu_pg",
+        "PG_SERVER_LABEL": "Lululemon Dev lulu_dev"
+      }
+    }
+  }
+}

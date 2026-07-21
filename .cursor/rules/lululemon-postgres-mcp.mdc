@@ -1,0 +1,49 @@
+---
+description: Use postgres-lulu-dev MCP for lulu_dev diagnostics; read-only guardrails
+globs: findings/**,queries/**,scripts/**
+alwaysApply: false
+---
+
+# Lululemon Postgres (`lulu_dev`) via MCP
+
+## When to use
+
+For **Lululemon IA ingestion Postgres** (`lulu_dev` @ `10.106.0.4`) — GSM, `generic_master_mapping`, `global.*_master`, `public.*_validated_table`, `data_ingestion_logs`, `sync_*_master` debugging — use the **`postgres-lulu-dev`** MCP server (`lulu_pg_query`, `lulu_pg_list_tables`).
+
+Do **not** use **`postgres-uat`** / `user-postgres-uat` for Lululemon; that MCP points at **Briscoes** (`briscoes_uat`).
+
+Run diagnostics yourself via MCP when the user asks for Postgres checks; do not ask them to paste results you can query.
+
+## Guardrails (mandatory)
+
+1. **Read-only (strict)** — Follow global `~/.cursor/rules/mcp-no-ddl.mdc`: **never** DDL/DML/`CALL`/`EXECUTE` via **any** MCP. MCP allows only `SELECT`, `EXPLAIN`, `WITH`, `SHOW`, `TABLE` and catalog introspection. `CALL public.sync_*()` and all DDL belong to approved manual `psql` / platform only.
+2. **No secrets in repo** — credentials live in `.cursor/secrets/lulu_dev_postgres.env` (gitignored). Never commit passwords or paste them into markdown, rules, or SQL files.
+3. **Row cap** — default `limit` 200; raise only when needed (MCP hard cap 500).
+4. **Scope schemas** — prefer `global`, `public`, `data_platform`, `inventory_smart`. Avoid scanning all of `information_schema` without filters.
+5. **Prod** — this config targets **dev/UAT** (`lulu_dev`). Do not assume prod host/db without explicit user confirmation.
+6. **BigQuery** — BQ masters live in `lululemon-01042025.lulu_ingestion_dev`; use BQ tools/rules for warehouse EDA, MCP for Postgres sync/GSM alignment.
+
+## Canonical diagnostics
+
+Reusable SQL: `queries/postgres_lulu_dev_diagnostics.sql` and `queries/postgres_sync_schema_checks.sql`.
+
+Typical sync health check:
+
+```sql
+SELECT created_at::date AS run_day,
+       target_table_sp,
+       MAX(CASE WHEN status = 'end' THEN 1 ELSE 0 END) AS succeeded
+FROM global.data_ingestion_logs
+WHERE target_table_sp IN ('public.sync_product_master', 'public.sync_store_master')
+GROUP BY 1, 2
+ORDER BY 1 DESC
+LIMIT 20;
+```
+
+## Setup (one-time, only if MCP is not already enabled)
+
+Skip this if `postgres-lulu-dev` is already enabled in **Cursor → Settings → MCP** and queries work.
+
+1. Copy `.cursor/secrets/lulu_dev_postgres.env.example` → `lulu_dev_postgres.env` and fill `PG_USER` / `PG_PASSWORD` (file may already exist).
+2. Project MCP: `.cursor/mcp.json` registers `postgres-lulu-dev`.
+3. **Cursor → Settings → MCP** — enable/reload `postgres-lulu-dev` after changes.

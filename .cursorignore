@@ -1,0 +1,9 @@
+# Lululemon — keep only bulky binaries out of indexing.
+# findings/ and reference_docs/ are indexed again (engagement revived 2026-06).
+# archive/ — out-of-scope work (SizeSmart); excluded to save tokens.
+archive/
+site/
+**/*.pdf
+**/*.png
+**/*.docx
+**/*.html

@@ -1,0 +1,47 @@
+feed,2025-08-28,2025-09-18,2025-10-06,2025-10-08,2025-11-18,2025-12-03,2025-12-05,2026-05-08
+Inventory_Parameters_Store_Priority,3f/0.0GB snap=n/a,,,,,,,
+TE2.0_EA_Assortment_Parameters,33f/0.7GB snap=n/a,,,,,,,
+TE2.0_EA_Demand_Forecast,33f/170.2GB snap=n/a,,,,,,,
+TE2.0_EA_Demand_Forecast_pod,,,,,,31f/162.1GB snap=n/a,,
+TE2.0_EA_Demand_Forecast_pov,,,,,,1f/6.7GB snap=n/a,,
+TE2.0_EA_FDOD_Alloc,33f/0.1GB snap=n/a,,,,,,,
+TE2.0_EA_FDOD_Replen,33f/1.9GB snap=n/a,,,,,,,
+TE2.0_EA_Minimum_Presentation,33f/1.3GB snap=n/a,,,,,,,
+TE2.0_EA_Transit_Calendar,33f/4.2GB snap=n/a,,,,,,,
+TE20_EA_Demand_Forecast_pod,,,,,,1f/0.4GB snap=n/a,,
+assortment_plan,64f/2.1GB snap=20250819,,,,32f/1.2GB snap=20251118,,,
+calendar_hierarchy,1f/0.0GB snap=20250813,,,,1f/0.0GB snap=20251118,,,
+cc_target,,,,8f/0.0GB snap=20251008,16f/0.0GB snap=20251118,,,
+class_location_attribute_seasonal,,,8f/0.0GB snap=20251001,,16f/0.0GB snap=20251118,,,
+dc_store_mapping,7f/0.1GB snap=20250814|20250908,,,,10f/0.1GB snap=20251118,,,
+delivery_week_logic,1f/0.0GB snap=n/a,,,,,,,
+eligibility20250818,32f/1.4GB snap=n/a,,,32f/1.4GB snap=n/a,,,,
+eligibility20251002,,,,29f/14.4GB snap=n/a,,,,
+eligibility20251118,,,,,64f/14.6GB snap=n/a,,,
+inseason_demand_forecast20251118,,,,,49f/71.6GB snap=n/a,,,
+inventory_snapshot,468f/938.8GB snap=20250820,,,768f/1597.0GB snap=20250820|20250903,64f/10.9GB snap=20251118,64f/14.3GB snap=20251202,224f/474.0GB snap=20251204,65f/11.5GB snap=20251118|20251204
+location_details,1f/0.0GB snap=20250819,,,,2f/0.0GB snap=20251118,,,2f/0.0GB snap=20251118
+location_group_hierarchy,1f/0.0GB snap=20250819,,,,1f/0.0GB snap=20251118,,,1f/0.0GB snap=20251118
+min_pres_eol,1f/0.0GB snap=n/a,,,,,,,
+nohup.out,,,,,,,1f/0.0GB snap=n/a,
+planned_sales,32f/9.8GB snap=20250819,,,,32f/11.1GB snap=20251118,,,
+preseason_product_hierarchy,8f/0.1GB snap=20250819,,,,8f/0.1GB snap=20251118,,,
+price_book,,64f/32.4GB snap=20250917,,,64f/33.9GB snap=20251118,,,
+product_attribute_s20250813,31f/0.1GB snap=n/a,,,,,,,
+product_attribute_s20251118,,,,,16f/0.1GB snap=n/a,,,16f/0.1GB snap=20251118
+product_attribute_s_seasonal20250813,26f/0.1GB snap=n/a,,,,,,,
+product_attribute_s_seasonal20251118,,,,,16f/0.1GB snap=n/a,,,
+product_attribute_so20250813,28f/0.1GB snap=n/a,,,,,,,
+product_attribute_so20251118,,,,,16f/0.1GB snap=n/a,,,
+product_attribute_so_seasonal20250813,22f/0.1GB snap=n/a,,,,,,,
+product_attribute_so_seasonal20251118,,,,,16f/0.1GB snap=n/a,,,
+product_group_hierarchy,16f/0.7GB snap=20250807,,,,16f/0.5GB snap=20251118,,,16f/0.5GB snap=20251118
+promotional_events20250821,2f/0.0GB snap=n/a,,,,,,,
+promotional_events20251118,,,,,5f/0.0GB snap=n/a,,,
+purchase_orders,26f/1.0GB snap=20250819,,,,16f/1.3GB snap=20251118,,,
+returns_transactions,48f/82.8GB snap=20250903,,,,48f/87.0GB snap=20251118,,,
+sales_transactions,47f/83.7GB snap=20250822,,,,64f/94.1GB snap=20251118,,,64f/94.1GB snap=20251118
+sku_details,177f/329.8GB snap=20250807|20250905,,,,21f/0.3GB snap=20251118,,,21f/0.3GB snap=20251118
+spatial_ai,2f/0.0GB snap=20250827,,,,2f/0.0GB snap=20251118,,,
+style_option,4f/0.1GB snap=20250909,,,,5f/0.1GB snap=20251118,,,
+transfer_orders,16f/24.9GB snap=20250814,,,,64f/26.4GB snap=20251118,,,

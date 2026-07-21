@@ -1,0 +1,22 @@
+---
+description: Use the Jun 24 2026 Lululemon Demand Forecasting SOW redlines as the latest scope reference
+alwaysApply: true
+---
+
+# Lululemon Final SOW Reference
+
+For Lululemon demand forecasting, sizing, outcome alignment, and final table-delivery work, use the **Jun 24 2026 redlines SOW (Demand Forecasting)** as the latest client reference:
+
+- Source `.docx`: `reference_docs/Lululemon/Contract/lululemon_impact_analytics_sow_2026-06-24_redlines_demand_forecasting.docx`
+- Searchable extract: `reference_docs/Lululemon/Contract/lululemon_impact_analytics_sow_2026-06-24_redlines_demand_forecasting.md`
+- Contract index: `reference_docs/Lululemon/Contract/README.md`
+- Project timelines (pair with SOW): `reference_docs/Lululemon/Timeline/lululemon_forecasting_timelines_v3.xlsx` (see `lululemon-forecasting-timelines.mdc`)
+
+Treat the Jun 24 2026 redlines SOW as authoritative over the Jun 25 2026 final draft, May 4 redline PDF, older agent summaries, prior timeline charts, and earlier planning notes when aligning:
+
+- final deliverables and milestones
+- table delivery grains and refresh expectations
+- forecasting and sizing acceptance criteria
+- client-facing scope or assumptions
+
+If the Markdown extract conflicts with the `.docx`, the `.docx` is authoritative.

@@ -1,0 +1,57 @@
+---
+description: Writing conventions for all documents and responses the agent produces in this project. Applies to chat replies, markdown files, code comments — anywhere the agent generates prose.
+alwaysApply: false
+---
+
+# Writing Conventions
+
+`Last updated: 2026-06-26.`
+
+This file is the running list of "going forward, don't do X / do Y instead" preferences captured during the project. Each rule is short and prescriptive. When the user adds a new preference, append it as the next numbered entry.
+
+## W1. Don't use the section sign `§`
+
+**Don't:** `§4`, `§2.1`, `§5.3`
+**Do:** `Section 4`, `Section 2.1`, `Section 5.3`
+
+**Why:** the section sign is not on most keyboards, can read as a "weird squiggle" to readers who haven't seen it before, and adds friction when someone wants to type a reply referencing the section. Spelled-out "Section N" is verbose but unambiguous.
+
+**Scope:** applies everywhere — chat replies, markdown docs in `findings/` and `docs/`, rule files in `.cursor/rules/`, code comments, Excel cell values written by `scripts/*.py`. The only exception is auto-generated HTML under `site/` (which mirrors source markdown — fixing source fixes the HTML on the next build).
+
+**Captured from:** chat 2026-04-28 — user requested global swap of `§` → `Section ` and asked that this become a permanent rule.
+
+## W2. Don't use the em dash `—` or decorative `---` dividers
+
+**Don't:** em dash `—` (U+2014, the long "big dash"); lone `---` lines between sections for visual breaks.
+
+**Do:** commas, colons, parentheses, new sentences, or spaced ASCII hyphen ` - `; use `##` headings instead of horizontal rules.
+
+**Why:** easier to type, read, and paste into Word/Slack/email without turning into a heavy rule line.
+
+**Scope:** same as W1. Global copy also lives in `~/.cursor/rules/no-em-dash.mdc` (all projects).
+
+**Captured from:** chat 2026-05-28 — user asked to stop using the big dash going forward.
+
+## W3. Use annotated scale words for large counts
+
+**Don't:** `683M`, `7.93B`, `980K`, `18.2M`, or long unscaled counts in stakeholder-facing distribution summaries.
+
+**Do:** use annotated scale words: `683.6 million`, `7.9 billion`, `980.5 thousand`. For exact source-table metadata, exact comma-separated integers are still fine when precision matters.
+
+**Why:** large numbers are easier to scan when the scale is written out, and words avoid ambiguous `K` / `M` / `B` suffixes.
+
+**Scope:** same as W1. Applies to chat, `findings/`, EDA summaries, and alignment docs. GB/TiB file sizes are fine to keep compact. Use exact integers when the user asks for exact counts or when documenting source truth.
+
+**Captured from:** chat 2026-06-26 and refined 2026-06-29, user requested million / billion / thousand annotations instead of compact suffixes.
+
+## W4. Pair large counts with percentages
+
+**Don't:** show large row counts in a distribution or bucket table without percentages.
+
+**Do:** include the count and the share in the same cell, e.g. `2,516,328,890 (31.73%)`.
+
+**Why:** large counts are hard to interpret without scale; percentages make the business impact clear immediately.
+
+**Scope:** applies to EDA tables, data-quality bucket tables, distribution summaries, and chat summaries when a denominator is known. Counts that are identifiers, exact row totals, or max/min values do not need percentages.
+
+**Captured from:** chat 2026-06-29, user requested percentages next to every large numerical bucket count.

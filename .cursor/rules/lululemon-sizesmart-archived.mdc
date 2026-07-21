@@ -1,0 +1,24 @@
+---
+description: SizeSmart / size-curve work archived — out of scope for Lululemon. Do not search archive/ or cite sizing deliverables unless the user explicitly asks to reopen archived sizing work.
+alwaysApply: true
+---
+
+# SizeSmart — archived (out of scope)
+
+`Last updated: 2026-06-16.`
+
+SizeSmart and size-curve CSV delivery are **not** part of the current Lululemon engagement.
+
+## Agent behavior
+
+- **Do not** proactively read, search, or summarize `archive/sizesmart/` or moved sizing paths.
+- **Do not** suggest SizeSmart workshops, curve methodology, or sizing client questions unless the user explicitly asks about archived sizing work.
+- **Do** focus active work on forecasting data prep, master EDA, ingestion, and SOW grains (PSS × Store/DC × Week/Day).
+
+## Where archived material lives
+
+[`archive/sizesmart/README.md`](../../archive/sizesmart/README.md) — index of moved files. Folder is in `.cursorignore`.
+
+## Product size columns (forecasting only)
+
+`product_master` fields `size_scale`, `product_size_definition`, and L2–L5 hierarchy may still matter for **forecasting grain** (PSS/PSO). For column meanings see [`findings/product_master_hierarchy_decoded.md`](../../findings/product_master_hierarchy_decoded.md), not the archived sizing note.

@@ -1,0 +1,44 @@
+feed,metric,value,note
+purchase_orders,rows,10401503,
+purchase_orders,distinct_estimate_po_sku,10437133,approximate
+purchase_orders,distinct_estimate_po_sku_location,10303255,approximate
+purchase_orders,distinct_estimate_purchase_orders,1485364,approximate
+purchase_orders,distinct_estimate_skus,673830,approximate
+purchase_orders,DATE_CREATED_range,2001-09-09 to 2025-11-18,
+purchase_orders,DATE_EXPECTED_DELIVERY_range,2016-11-01 to 2031-01-01,
+purchase_orders,DATE_RECEIVED_range,2016-11-01 to 2025-11-18,
+purchase_orders,DATE_SCHEDULED_range,2001-09-19 to 2032-12-14,
+purchase_orders,DATE_SHIPPED_range,2016-09-28 to 2025-11-24,
+purchase_orders,grain_duplicate_estimate,98248,0.9446%
+product_attribute_s_seasonal,rows,650404,
+product_attribute_s_seasonal,distinct_estimate_quarters,52,approximate
+product_attribute_s_seasonal,distinct_estimate_style_quarter,649729,approximate
+product_attribute_s_seasonal,distinct_estimate_styles,83557,approximate
+product_attribute_s_seasonal,QUARTER_ID_range,20151 to 20274,
+product_attribute_s_seasonal,grain_duplicate_estimate,675,0.1038%
+product_attribute_so_seasonal,rows,1196146,
+product_attribute_so_seasonal,distinct_estimate_quarters,51,approximate
+product_attribute_so_seasonal,distinct_estimate_style_option_quarter,1203251,approximate
+product_attribute_so_seasonal,distinct_estimate_style_options,431554,approximate
+product_attribute_so_seasonal,QUARTER_ID_range,20151 to 20273,
+product_attribute_so_seasonal,grain_duplicate_estimate,0,0.0%
+eligibility,rows,241782410,
+eligibility,distinct_estimate_planning_style_options,67781,approximate
+eligibility,distinct_estimate_pso_store,14369846,approximate
+eligibility,distinct_estimate_pso_store_week,229176008,approximate
+eligibility,distinct_estimate_stores,1194,approximate
+eligibility,distinct_estimate_weeks,261,approximate
+eligibility,WEEK_ID_range,202201 to 202652,
+eligibility,WP_FIRST_SELLING_DAY_ID_range,2021-01-19 to 2026-12-29,
+eligibility,WP_FIRST_SELLING_WEEK_ID_range,202051 to 202648,
+eligibility,grain_duplicate_estimate,12606402,5.2139%
+style_option,rows,469512,
+style_option,distinct_estimate_colourways,47354,approximate
+style_option,distinct_estimate_planning_style_options,461044,approximate
+style_option,distinct_estimate_pso_style_option,463993,approximate
+style_option,distinct_estimate_style_options,466199,approximate
+style_option,distinct_estimate_styles,80733,approximate
+style_option,grain_duplicate_estimate,5519,1.1755%
+stylecolor_overlap,eligibility_rows_scanned,3779130,one eligibility shard
+stylecolor_overlap,matched_eligibility_rows,3572082,94.5213%
+stylecolor_overlap,matched_pso_estimate,59186,98.0144% of eligibility PSO estimate

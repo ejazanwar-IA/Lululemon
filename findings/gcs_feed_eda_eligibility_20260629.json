@@ -1,0 +1,249 @@
+{
+  "column_count": 7,
+  "column_population": {
+    "PLANNING_STYLE_OPTION_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "QUARTER_NAME": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "STORE_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "WEEK_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "WP_FIRST_SELLING_DAY_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "WP_FIRST_SELLING_WEEK_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    },
+    "WP_WEEKS_AT_REG_PRICE": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 241782410,
+      "nonnull_pct": 100.0
+    }
+  },
+  "columns": [
+    "PLANNING_STYLE_OPTION_ID",
+    "STORE_ID",
+    "WEEK_ID",
+    "QUARTER_NAME",
+    "WP_FIRST_SELLING_WEEK_ID",
+    "WP_FIRST_SELLING_DAY_ID",
+    "WP_WEEKS_AT_REG_PRICE"
+  ],
+  "date_ranges": {
+    "WEEK_ID": {
+      "max": "202652",
+      "min": "202201"
+    },
+    "WP_FIRST_SELLING_DAY_ID": {
+      "max": "2026-12-29",
+      "min": "2021-01-19"
+    },
+    "WP_FIRST_SELLING_WEEK_ID": {
+      "max": "202648",
+      "min": "202051"
+    }
+  },
+  "distinct_estimates": {
+    "planning_style_options": 67781,
+    "pso_store": 14369846,
+    "pso_store_week": 229176008,
+    "stores": 1194,
+    "weeks": 261
+  },
+  "feed": "eligibility",
+  "files_scanned": 64,
+  "future_counts": {
+    "WP_FIRST_SELLING_DAY_ID": {
+      "pct": 0.0038,
+      "rows": 9268
+    }
+  },
+  "grain_check": {
+    "distinct_estimate": 229176008,
+    "duplicate_pct_estimate": 5.2139,
+    "duplicate_rows_estimate": 12606402,
+    "grain_name": "pso_store_week",
+    "row_count": 241782410
+  },
+  "missing_columns_expected": [],
+  "notes": {
+    "approx_distinct": "Distinct counts use KMV approximate distinct sketches for memory safety."
+  },
+  "numeric": {
+    "WP_WEEKS_AT_REG_PRICE": {
+      "avg": 10.5614,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "max": 99.0,
+      "min": 1.0,
+      "negative": 0,
+      "negative_pct": 0.0,
+      "positive": 241782410,
+      "positive_pct": 100.0,
+      "sum": 2553568378.0,
+      "zero": 0,
+      "zero_pct": 0.0
+    }
+  },
+  "prefix": "gs://client_data_lululemon/Historic/s3_to_gcs/consolidated/eligibility/",
+  "rows": 241782410,
+  "sample_rows": [
+    {
+      "PLANNING_STYLE_OPTION_ID": "LM9AKPS-053674",
+      "QUARTER_NAME": "Q4 2022",
+      "STORE_ID": "55114",
+      "WEEK_ID": "202243",
+      "WP_FIRST_SELLING_DAY_ID": "2022-11-01",
+      "WP_FIRST_SELLING_WEEK_ID": "202240",
+      "WP_WEEKS_AT_REG_PRICE": "13"
+    },
+    {
+      "PLANNING_STYLE_OPTION_ID": "TAK",
+      "QUARTER_NAME": "Q1 2024",
+      "STORE_ID": "45234",
+      "WEEK_ID": "202410",
+      "WP_FIRST_SELLING_DAY_ID": "2024-03-26",
+      "WP_FIRST_SELLING_WEEK_ID": "202409",
+      "WP_WEEKS_AT_REG_PRICE": "13"
+    },
+    {
+      "PLANNING_STYLE_OPTION_ID": "LW5EZGA-066827",
+      "QUARTER_NAME": "Q4 2024",
+      "STORE_ID": "45829",
+      "WEEK_ID": "202448",
+      "WP_FIRST_SELLING_DAY_ID": "2024-12-17",
+      "WP_FIRST_SELLING_WEEK_ID": "202447",
+      "WP_WEEKS_AT_REG_PRICE": "8"
+    }
+  ],
+  "top_values": {
+    "QUARTER_NAME": [
+      {
+        "pct": 6.5792,
+        "rows": 15907248,
+        "value": "Q1 2025"
+      },
+      {
+        "pct": 6.3311,
+        "rows": 15307409,
+        "value": "Q4 2024"
+      },
+      {
+        "pct": 6.2198,
+        "rows": 15038475,
+        "value": "Q2 2022"
+      },
+      {
+        "pct": 6.137,
+        "rows": 14838142,
+        "value": "Q1 2023"
+      },
+      {
+        "pct": 6.1342,
+        "rows": 14831447,
+        "value": "Q2 2023"
+      },
+      {
+        "pct": 6.0647,
+        "rows": 14663387,
+        "value": "Q3 2022"
+      },
+      {
+        "pct": 6.0547,
+        "rows": 14639137,
+        "value": "Q4 2022"
+      },
+      {
+        "pct": 6.0523,
+        "rows": 14633414,
+        "value": "Q2 2025"
+      },
+      {
+        "pct": 5.9227,
+        "rows": 14320054,
+        "value": "Q3 2024"
+      },
+      {
+        "pct": 5.8431,
+        "rows": 14127507,
+        "value": "Q3 2023"
+      }
+    ],
+    "WP_WEEKS_AT_REG_PRICE": [
+      {
+        "pct": 44.4008,
+        "rows": 107353310,
+        "value": "13"
+      },
+      {
+        "pct": 12.1463,
+        "rows": 29367665,
+        "value": "6"
+      },
+      {
+        "pct": 8.9649,
+        "rows": 21675559,
+        "value": "9"
+      },
+      {
+        "pct": 6.0188,
+        "rows": 14552378,
+        "value": "8"
+      },
+      {
+        "pct": 4.5649,
+        "rows": 11037039,
+        "value": "14"
+      },
+      {
+        "pct": 4.1496,
+        "rows": 10033080,
+        "value": "4"
+      },
+      {
+        "pct": 3.1574,
+        "rows": 7634035,
+        "value": "7"
+      },
+      {
+        "pct": 3.0626,
+        "rows": 7404909,
+        "value": "10"
+      },
+      {
+        "pct": 3.0573,
+        "rows": 7391967,
+        "value": "5"
+      },
+      {
+        "pct": 3.034,
+        "rows": 7335650,
+        "value": "12"
+      }
+    ]
+  }
+}

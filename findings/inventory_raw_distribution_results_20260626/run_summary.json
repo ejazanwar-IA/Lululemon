@@ -1,0 +1,57 @@
+[
+  {
+    "section": "INV_DIST_01",
+    "status": "done",
+    "rows": 1,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_01.json"
+  },
+  {
+    "section": "INV_DIST_02",
+    "status": "done",
+    "rows": 3,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_02.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_02.sql"
+  },
+  {
+    "section": "INV_DIST_03",
+    "status": "done",
+    "rows": 3,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_03.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_03.sql"
+  },
+  {
+    "section": "INV_DIST_04",
+    "status": "done",
+    "rows": 3,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_04.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_04.sql"
+  },
+  {
+    "section": "INV_DIST_05",
+    "status": "done",
+    "rows": 1,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_05.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_05.sql"
+  },
+  {
+    "section": "INV_DIST_06",
+    "status": "done",
+    "rows": 182,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_06.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_06.sql"
+  },
+  {
+    "section": "INV_DIST_07",
+    "status": "done",
+    "rows": 150,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_07.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_07.sql"
+  },
+  {
+    "section": "INV_DIST_08",
+    "status": "done",
+    "rows": 3,
+    "json_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_08.json",
+    "sql_file": "/Users/ejazanwarmd/Desktop/Lululemon/findings/inventory_raw_distribution_results_20260626/INV_DIST_08.sql"
+  }
+]

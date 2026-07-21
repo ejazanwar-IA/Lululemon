@@ -1,0 +1,14 @@
+---
+description: Multi-client reference codebase (insideinsight-mtp-bigquery). Use for pattern lookup, client comparison, ingestion/GSM design, or "how did other clients do this?"
+alwaysApply: false
+---
+
+# Client Reference Codebase
+
+For any reference-based task, pattern lookup, client comparison, ingestion/GSM design, BigQuery SQL convention, or "how did other clients do this?" question, always search this folder before concluding:
+
+`/Users/ejazanwarmd/Downloads/insideinsight-mtp-bigquery-3df90a9e5596`
+
+Use it alongside the local Lululemon docs and reference docs. Treat it as the multi-client codebase of examples, especially for sourcing, ingestion, inventory, transaction, product, store, mapping, and master-table build patterns.
+
+If the folder does not contain the exact artifact type requested, say that clearly and still use the closest matching client SQL or pattern as supporting evidence.

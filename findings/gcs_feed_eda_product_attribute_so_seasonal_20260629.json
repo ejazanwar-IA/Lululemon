@@ -1,0 +1,269 @@
+{
+  "column_count": 9,
+  "column_population": {
+    "FLEX_SEASON_CODE": {
+      "missing": 586176,
+      "missing_pct": 49.0054,
+      "nonnull": 609970,
+      "nonnull_pct": 50.9946
+    },
+    "FLEX_STATUS": {
+      "missing": 586176,
+      "missing_pct": 49.0054,
+      "nonnull": 609970,
+      "nonnull_pct": 50.9946
+    },
+    "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION": {
+      "missing": 469091,
+      "missing_pct": 39.2169,
+      "nonnull": 727055,
+      "nonnull_pct": 60.7831
+    },
+    "LOOK_NAMES": {
+      "missing": 1194549,
+      "missing_pct": 99.8665,
+      "nonnull": 1597,
+      "nonnull_pct": 0.1335
+    },
+    "PRODUCT_LIFE_STAGE_STYLE_OPTION": {
+      "missing": 1137920,
+      "missing_pct": 95.1322,
+      "nonnull": 58226,
+      "nonnull_pct": 4.8678
+    },
+    "PRODUCT_SEASONAL_NEWNESS": {
+      "missing": 564474,
+      "missing_pct": 47.1911,
+      "nonnull": 631672,
+      "nonnull_pct": 52.8089
+    },
+    "QUARTER_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 1196146,
+      "nonnull_pct": 100.0
+    },
+    "SEASONAL_COLOURWAY_TYPE": {
+      "missing": 586199,
+      "missing_pct": 49.0073,
+      "nonnull": 609947,
+      "nonnull_pct": 50.9927
+    },
+    "STYLE_OPTION_ID": {
+      "missing": 0,
+      "missing_pct": 0.0,
+      "nonnull": 1196146,
+      "nonnull_pct": 100.0
+    }
+  },
+  "columns": [
+    "STYLE_OPTION_ID",
+    "QUARTER_ID",
+    "FLEX_SEASON_CODE",
+    "FLEX_STATUS",
+    "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION",
+    "LOOK_NAMES",
+    "PRODUCT_LIFE_STAGE_STYLE_OPTION",
+    "PRODUCT_SEASONAL_NEWNESS",
+    "SEASONAL_COLOURWAY_TYPE"
+  ],
+  "date_ranges": {
+    "QUARTER_ID": {
+      "max": "20273",
+      "min": "20151"
+    }
+  },
+  "distinct_estimates": {
+    "quarters": 51,
+    "style_option_quarter": 1203251,
+    "style_options": 431554
+  },
+  "feed": "product_attribute_so_seasonal",
+  "files_scanned": 16,
+  "future_counts": {},
+  "grain_check": {
+    "distinct_estimate": 1203251,
+    "duplicate_pct_estimate": 0.0,
+    "duplicate_rows_estimate": 0,
+    "grain_name": "style_option_quarter",
+    "row_count": 1196146
+  },
+  "missing_columns_expected": [],
+  "notes": {
+    "approx_distinct": "Distinct counts use KMV approximate distinct sketches for memory safety."
+  },
+  "numeric": {},
+  "prefix": "gs://client_data_lululemon/Historic/s3_to_gcs/consolidated/product_attribute_so_seasonal/",
+  "rows": 1196146,
+  "sample_rows": [
+    {
+      "FLEX_SEASON_CODE": "18-2SU",
+      "FLEX_STATUS": "Active",
+      "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION": "",
+      "PRODUCT_SEASONAL_NEWNESS": "",
+      "QUARTER_ID": "20182",
+      "SEASONAL_COLOURWAY_TYPE": "New",
+      "STYLE_OPTION_ID": "LM3AV2S-033085"
+    },
+    {
+      "FLEX_SEASON_CODE": "19-4WI",
+      "FLEX_STATUS": "Active",
+      "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION": "New",
+      "PRODUCT_SEASONAL_NEWNESS": "new",
+      "QUARTER_ID": "20194",
+      "SEASONAL_COLOURWAY_TYPE": "New",
+      "STYLE_OPTION_ID": "LW5BEJS-030699"
+    },
+    {
+      "FLEX_SEASON_CODE": "19-3FA",
+      "FLEX_STATUS": "Active",
+      "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION": "New",
+      "PRODUCT_SEASONAL_NEWNESS": "new",
+      "QUARTER_ID": "20193",
+      "SEASONAL_COLOURWAY_TYPE": "New",
+      "STYLE_OPTION_ID": "LW4BAIS-032491"
+    }
+  ],
+  "top_values": {
+    "FLEX_SEASON_CODE": [
+      {
+        "pct": 49.0054,
+        "rows": 586176,
+        "value": "<missing>"
+      },
+      {
+        "pct": 2.2797,
+        "rows": 27269,
+        "value": "25-2SU"
+      },
+      {
+        "pct": 2.2587,
+        "rows": 27017,
+        "value": "25-3FA"
+      },
+      {
+        "pct": 2.1815,
+        "rows": 26094,
+        "value": "25-1SP"
+      },
+      {
+        "pct": 2.0901,
+        "rows": 25001,
+        "value": "25-4WI"
+      },
+      {
+        "pct": 2.018,
+        "rows": 24138,
+        "value": "26-1SP"
+      },
+      {
+        "pct": 1.9294,
+        "rows": 23079,
+        "value": "26-2SU"
+      },
+      {
+        "pct": 1.7964,
+        "rows": 21488,
+        "value": "24-4WI"
+      },
+      {
+        "pct": 1.7585,
+        "rows": 21034,
+        "value": "24-1SP"
+      },
+      {
+        "pct": 1.7348,
+        "rows": 20751,
+        "value": "24-3FA"
+      }
+    ],
+    "FLEX_STATUS": [
+      {
+        "pct": 49.0054,
+        "rows": 586176,
+        "value": "<missing>"
+      },
+      {
+        "pct": 27.9113,
+        "rows": 333860,
+        "value": "Active"
+      },
+      {
+        "pct": 22.0183,
+        "rows": 263371,
+        "value": "Drop"
+      },
+      {
+        "pct": 1.0624,
+        "rows": 12708,
+        "value": "Cancelled"
+      },
+      {
+        "pct": 0.0026,
+        "rows": 31,
+        "value": "Inactive"
+      }
+    ],
+    "GLOBAL_PRODUCT_SEASONAL_NEWNESS_STYLE_OPTION": [
+      {
+        "pct": 39.2169,
+        "rows": 469091,
+        "value": "<missing>"
+      },
+      {
+        "pct": 24.4385,
+        "rows": 292320,
+        "value": "Existing"
+      },
+      {
+        "pct": 21.7218,
+        "rows": 259824,
+        "value": "Non Comp"
+      },
+      {
+        "pct": 14.6229,
+        "rows": 174911,
+        "value": "New"
+      }
+    ],
+    "PRODUCT_SEASONAL_NEWNESS": [
+      {
+        "pct": 47.1911,
+        "rows": 564474,
+        "value": "<missing>"
+      },
+      {
+        "pct": 22.8767,
+        "rows": 273639,
+        "value": "existing"
+      },
+      {
+        "pct": 20.8159,
+        "rows": 248989,
+        "value": "non comp"
+      },
+      {
+        "pct": 9.1163,
+        "rows": 109044,
+        "value": "new"
+      }
+    ],
+    "SEASONAL_COLOURWAY_TYPE": [
+      {
+        "pct": 49.0073,
+        "rows": 586199,
+        "value": "<missing>"
+      },
+      {
+        "pct": 40.8739,
+        "rows": 488912,
+        "value": "New"
+      },
+      {
+        "pct": 10.1187,
+        "rows": 121035,
+        "value": "Carryover"
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+S.no,Open Q,Source Data,Priority,Action Item,Response (Client),Notes
+1,1 vs 3 regional instances (NAM / EMEA / APAC) for data packaging,SOW / delivery design,P1,Reconcile SOW template vs section 13,,F-5
+2,"Incremental daily refresh; cadence, regions, delta vs full reload",S3/GCS feeds,P1,Written schedule before go-live,,F-9
+3,Standardize on cleaned / dated raw table variants,Various raw tables,P1,Confirm canonical table per feed,,
+4,Rebuild from cleaned masters; not POC master modeling outputs,BQ master POC tables,P1,Confirm IA will not use PC modeling tables,,
+5,calender vs calendar spelling in dataset names,BQ datasets,P2,Canonical naming,,
+6,returns transactions (734M rows); role vs sales transactions,returns_transactions,P0,See transaction master #2,,Duplicate pointer for feed owners

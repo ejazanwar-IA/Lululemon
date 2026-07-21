@@ -1,0 +1,1 @@
+../findings/schema_inventory.md

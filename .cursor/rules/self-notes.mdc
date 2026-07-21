@@ -1,0 +1,17 @@
+---
+description: Self Notes/ personal learning. Use when conversation produces durable SQL/pitfalls/workflows worth saving; check README before duplicating.
+alwaysApply: false
+---
+
+# Self Notes
+
+When the conversation produces reusable project learning that Ejaz should remember, consider adding it to `Self Notes/`.
+
+Rules:
+
+- Add notes only for durable learning, not every small answer.
+- Before adding content, check `Self Notes/README.md` and related notes to avoid duplication.
+- Prefer updating an existing note when the topic already exists.
+- Keep formatting polished and practical: purpose, explanation, examples, pitfalls, and reusable SQL where useful.
+- Update the `Self Notes/README.md` index whenever adding a new note.
+- Do not overwrite unrelated user edits in existing notes.

@@ -1,0 +1,3 @@
+S.no,Open Q,Source Data,Priority,Action Item,Response (Client),Notes
+1,Calendar ends FY27; spec wants 5 years forward (FY2030),calendar_hierarchy,P1,Extend fiscal calendar feed,,F-7
+2,Confirm fiscal week is canonical grain for PSS × store/DC × week,"calendar_hierarchy, fiscal_date_mapping",P0,Sign off week definition vs retail calendar,,Ties to IA transfer

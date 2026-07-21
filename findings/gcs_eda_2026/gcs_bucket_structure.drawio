@@ -1,0 +1,90 @@
+<mxfile host="Cursor" version="24.0.0">
+  <diagram name="client_data_lululemon GCS bucket" id="gcsBucket">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="gs://client_data_lululemon/  -  GCS bucket structure" style="text;html=1;align=left;verticalAlign=middle;fontSize=20;fontStyle=1;fontColor=#23445D" vertex="1" parent="1"><mxGeometry x="40" y="-150" width="900" height="40" as="geometry" /></mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;Grey = out of scope / empty&lt;br&gt;Yellow = findings note&lt;br&gt;Dashed grey = file-name pattern" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#F8F8F8;strokeColor=#999999" vertex="1" parent="1"><mxGeometry x="1240" y="-150" width="300" height="100" as="geometry" /></mxCell>
+
+        <!-- Root -->
+        <mxCell id="root" value="GCS Bucket&#10;(client_data_lululemon)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B3B3B3;strokeColor=#23445D;fontStyle=1" vertex="1" parent="1"><mxGeometry x="40" y="430" width="240" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 1: top folders -->
+        <mxCell id="clustering" value="Clustering_Latest/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B3B3B3;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="360" y="40" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="sample" value="2026-05-08/&#10;(ignore: sample data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B3B3B3;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="360" y="160" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="testf" value="test/  (empty)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#B3B3B3;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="360" y="280" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="foundation" value="FOUNDATION_DATA/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="360" y="460" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="historic" value="Historic/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="360" y="820" width="240" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 2 -->
+        <mxCell id="clustcsv" value="Clustering_Latest.csv&#10;(single file)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="680" y="40" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="exports" value="exports/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="680" y="460" width="240" height="60" as="geometry" /></mxCell>
+        <mxCell id="s3" value="s3_to_gcs/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="680" y="820" width="240" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 3 -->
+        <mxCell id="findings" value="&lt;b&gt;Clustering_Latest.csv - key findings&lt;/b&gt;&lt;br&gt;&lt;br&gt;Grain: workstream x L2 x store (2,236 rows, 0 dup keys)&lt;br&gt;Cols (8): workstream, l2_name, aur, quantity_sold, revenue, cluster_name, labels, store_code&lt;br&gt;&lt;br&gt;2 workstreams: US Retail (1,916), Canada Retail (320)&lt;br&gt;551 stores, 47 clusters&lt;br&gt;5 L2: Accessories / Footwear / Mens / Womens (~550 each), Others (35)&lt;br&gt;Clusters: 24 US + 23 Canada; 8-11 per L2&lt;br&gt;labels = cluster number within group (1-8)&lt;br&gt;&lt;br&gt;Metrics (min / max / avg):&lt;br&gt;AUR 3 / 218 / 85 ; Qty 1 / 5,754 / 643 ; Revenue $4 / $484K / $50K&lt;br&gt;&lt;br&gt;= store-clustering model output; store_code is zero-padded 10-digit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF4CE;strokeColor=#D6B656;align=left;verticalAlign=top;spacing=10" vertex="1" parent="1"><mxGeometry x="1000" y="20" width="380" height="290" as="geometry" /></mxCell>
+        <mxCell id="ch" value="CH/&#10;week.csv  (1 shard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1000" y="380" width="260" height="60" as="geometry" /></mxCell>
+        <mxCell id="lh" value="LH/&#10;location_hierarchy.csv  (4 shards)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1000" y="460" width="260" height="60" as="geometry" /></mxCell>
+        <mxCell id="slsinv" value="SLS_INV/&#10;sales_inventory.csv  (40 shards, 8.5GB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1000" y="540" width="260" height="60" as="geometry" /></mxCell>
+        <mxCell id="foundnote" value="shard pattern:  name.csv_a_b_0.csv  (no date)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1" vertex="1" parent="1"><mxGeometry x="1000" y="620" width="260" height="50" as="geometry" /></mxCell>
+        <mxCell id="batch" value="BATCH_DATE/&#10;7 batches: 2025-08-28 .. 2025-12-05&#10;(2026-05-08 empty)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1000" y="815" width="260" height="70" as="geometry" /></mxCell>
+
+        <!-- Level 4 -->
+        <mxCell id="outbound" value="outbound/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1360" y="820" width="200" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 5 -->
+        <mxCell id="feed" value="feed/&#10;(38 standard feeds)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1660" y="700" width="220" height="60" as="geometry" /></mxCell>
+        <mxCell id="anaplan" value="anaplan/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1660" y="940" width="220" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 6 -->
+        <mxCell id="statusnew" value="new/  (default status)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1980" y="650" width="220" height="60" as="geometry" /></mxCell>
+        <mxCell id="statusproc" value="processed/ or temp/&#10;(a few feeds)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1980" y="740" width="220" height="60" as="geometry" /></mxCell>
+        <mxCell id="subfeed" value="subfeed/&#10;(demand_forecast, allocation_calender, ...)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="1980" y="940" width="240" height="60" as="geometry" /></mxCell>
+
+        <!-- Level 7 -->
+        <mxCell id="filepat" value="feed_YYYYMMDD_HHMMSS_a_b_c.csv" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1" vertex="1" parent="1"><mxGeometry x="2300" y="655" width="260" height="50" as="geometry" /></mxCell>
+        <mxCell id="ananew" value="new/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="2300" y="945" width="120" height="50" as="geometry" /></mxCell>
+
+        <!-- Level 8 -->
+        <mxCell id="pod" value="pod_id=N/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#23445D" vertex="1" parent="1"><mxGeometry x="2500" y="945" width="140" height="50" as="geometry" /></mxCell>
+
+        <!-- Level 9 -->
+        <mxCell id="anafile" value="TE2.0_EA_*.csv  /&#10;Inventory_Parameters_*.csv" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#999999;dashed=1" vertex="1" parent="1"><mxGeometry x="2720" y="940" width="260" height="60" as="geometry" /></mxCell>
+
+        <!-- Edges (orthogonal, consistent) -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="root" target="clustering"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="root" target="sample"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="root" target="testf"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="root" target="foundation"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="root" target="historic"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="clustering" target="clustcsv"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#D6B656;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="clustcsv" target="findings"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="foundation" target="exports"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="exports" target="ch"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="exports" target="lh"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="exports" target="slsinv"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=none;dashed=1;strokeColor=#999999;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="exports" target="foundnote"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="historic" target="s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="s3" target="batch"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="batch" target="outbound"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="outbound" target="feed"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="outbound" target="anaplan"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="feed" target="statusnew"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="feed" target="statusproc"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="statusnew" target="filepat"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="anaplan" target="subfeed"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="subfeed" target="ananew"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="ananew" target="pod"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;strokeColor=#23445D;exitX=1;exitY=0.5;entryX=0;entryY=0.5" edge="1" parent="1" source="pod" target="anafile"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

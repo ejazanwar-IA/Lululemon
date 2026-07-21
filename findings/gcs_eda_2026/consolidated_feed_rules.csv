@@ -1,0 +1,36 @@
+feed,dest_folder,source_batch,source_feed,layout,notes
+inventory_snapshot,inventory_snapshot,2025-12-05,inventory_snapshot,flat,latest snap 20251204
+sku_details,sku_details,2025-08-28,sku_details,flat,priced Aug shards
+sales_transactions,sales_transactions,2025-11-18,sales_transactions,flat,
+returns_transactions,returns_transactions,2025-11-18,returns_transactions,flat,
+price_book,price_book,2025-11-18,price_book,flat,
+transfer_orders,transfer_orders,2025-11-18,transfer_orders,flat,
+planned_sales,planned_sales,2025-11-18,planned_sales,flat,
+assortment_plan,assortment_plan,2025-11-18,assortment_plan,flat,
+purchase_orders,purchase_orders,2025-11-18,purchase_orders,flat,
+product_group_hierarchy,product_group_hierarchy,2025-11-18,product_group_hierarchy,flat,
+location_details,location_details,2025-11-18,location_details,flat,
+location_group_hierarchy,location_group_hierarchy,2025-11-18,location_group_hierarchy,flat,
+dc_store_mapping,dc_store_mapping,2025-11-18,dc_store_mapping,flat,
+calendar_hierarchy,calendar_hierarchy,2025-11-18,calendar_hierarchy,flat,
+product_attribute_s,product_attribute_s,2025-11-18,product_attribute_s20251118,flat,
+product_attribute_s_seasonal,product_attribute_s_seasonal,2025-11-18,product_attribute_s_seasonal20251118,flat,
+product_attribute_so,product_attribute_so,2025-11-18,product_attribute_so20251118,flat,
+product_attribute_so_seasonal,product_attribute_so_seasonal,2025-11-18,product_attribute_so_seasonal20251118,flat,
+inseason_demand_forecast,inseason_demand_forecast,2025-11-18,inseason_demand_forecast20251118,flat,
+promotional_events,promotional_events,2025-11-18,promotional_events20251118,flat,
+spatial_ai,spatial_ai,2025-11-18,spatial_ai,flat,
+style_option,style_option,2025-11-18,style_option,flat,
+cc_target,cc_target,2025-11-18,cc_target,flat,
+class_location_attribute_seasonal,class_location_attribute_seasonal,2025-11-18,class_location_attribute_seasonal,flat,
+eligibility,eligibility,2025-11-18,eligibility20251118,flat,skip older eligibility variants
+preseason_product_hierarchy,preseason_product_hierarchy,2025-11-18,preseason_product_hierarchy,flat,
+delivery_week_logic,delivery_week_logic,2025-08-28,delivery_week_logic,flat,Aug only
+min_pres_eol,min_pres_eol,2025-08-28,min_pres_eol,flat,Aug only
+TE2.0_EA_Assortment_Parameters,anaplan/allocation_calender,2025-08-28,TE2.0_EA_Assortment_Parameters,anaplan,
+TE2.0_EA_FDOD_Alloc,anaplan/fdod_alloc,2025-08-28,TE2.0_EA_FDOD_Alloc,anaplan,
+TE2.0_EA_FDOD_Replen,anaplan/fdod_replen,2025-08-28,TE2.0_EA_FDOD_Replen,anaplan,
+TE2.0_EA_Minimum_Presentation,anaplan/min_pres,2025-08-28,TE2.0_EA_Minimum_Presentation,anaplan,
+TE2.0_EA_Transit_Calendar,anaplan/transit_calender,2025-08-28,TE2.0_EA_Transit_Calendar,anaplan,
+Inventory_Parameters_Store_Priority,anaplan/store_priority,2025-08-28,Inventory_Parameters_Store_Priority,anaplan,
+TE2.0_EA_Demand_Forecast,anaplan/demand_forecast,2025-12-03,TE2.0_EA_Demand_Forecast_pod,anaplan,pod+pov from Dec batch; excludes temp/

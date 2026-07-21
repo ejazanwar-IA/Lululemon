@@ -1,0 +1,68 @@
+{
+  "eda_date": "2026-06-30",
+  "bq_dataset": "lululemon-01042025.lulu_sourcing_dev",
+  "sync_batch": "2026-06-25",
+  "tables": {
+    "planned_sales": {
+      "requirement": 11,
+      "row_count": 115687669,
+      "size_gb": 12.303,
+      "grain": "STYLE_OPTION_ID x STORE_ID x WEEK_ID",
+      "distinct_grain": 106895955,
+      "duplicate_rows": 8557957,
+      "duplicate_pct": 7.4,
+      "distinct_style_options": 37672,
+      "distinct_stores": 1045,
+      "distinct_weeks": 105,
+      "week_id_range": ["202452", "202651"],
+      "units_zero_pct": 40.53,
+      "units_positive_pct": 59.47,
+      "future_rows_after_wk202626_pct": 9.6,
+      "size_range_missing_pct": 5.71,
+      "style_option_join_pct": 100.0,
+      "store_join_pct": 100.0,
+      "has_price_columns": false
+    },
+    "product_attribute_s_seasonal": {
+      "requirement": 13,
+      "row_count": 650404,
+      "grain": "STYLE_ID x QUARTER_ID",
+      "distinct_styles": 85861,
+      "quarter_range": ["20151", "20274"],
+      "quarters_in_calendar_pct": 100.0,
+      "grain_duplicate_rows": 0,
+      "flex_status_missing_pct": 73.27,
+      "seasonal_style_type_missing_pct": 73.34,
+      "styles_in_style_option_pct": 95.27
+    },
+    "product_attribute_so_seasonal": {
+      "requirement": 13,
+      "row_count": 1196146,
+      "grain": "STYLE_OPTION_ID x QUARTER_ID",
+      "distinct_style_options": 439930,
+      "quarter_range": ["20151", "20273"],
+      "flex_status_missing_pct": 49.01,
+      "seasonal_colourway_missing_pct": 49.01,
+      "style_option_join_pct": 100.0
+    },
+    "eligibility": {
+      "requirement": 14,
+      "row_count": 241782410,
+      "size_gb": 16.727,
+      "grain": "PLANNING_STYLE_OPTION_ID x STORE_ID x WEEK_ID",
+      "distinct_grain": 230521420,
+      "duplicate_rows": 11260990,
+      "duplicate_pct": 4.66,
+      "approx_distinct_pso": 67581,
+      "approx_distinct_stores": 1195,
+      "week_id_range": ["202201", "202652"],
+      "future_first_sell_rows": 8358,
+      "future_first_sell_pct": 0.0035,
+      "wp_weeks_at_reg_price_mode": 13,
+      "wp_weeks_at_reg_price_mode_pct": 44.4,
+      "rows_matched_style_option_pct": 94.53,
+      "pso_style_option_pct": 97.68,
+      "store_location_join_pct": 90.79
+    }
+  }
+}

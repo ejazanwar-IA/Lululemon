@@ -1,0 +1,12 @@
+S.no,Open Q,Source Data,Priority,Action Item,Response (Client),Notes
+1,Cost and msrp zero in current txn build; traces to Nov 2025 sku_details drop (Aug 2025 GCS drop had prices),lulu_sourcing_dev.sku_details (via build join),P0,Same as product master #1; load priced batch or alternate pricing feed,,Symptom of A-1; not hardcoded null cost. GCS 20251118 batch loaded May 2026
+2,Returns policy: transaction master is gross-only; 734M-row returns feed exists,"sales_transactions, returns_transactions",P0,Net sales vs gross? Use returns feed? Reconciliation rule?,,F-4
+3,Single transaction type value; where are returns / voids?,sales_transactions,P0,Point to returns source or confirm gross-only model,,
+4,"Zero-qty transactions (~27% of rows); keep, filter, or impute?",sales_transactions,P1,Confirm modeling filter (qty > 0 and revenue > 0?),,F-8; IA workaround: filter for real sales
+5,"Extreme outliers; max qty 31K, max revenue $20M",sales_transactions,P1,Wholesale/B2B or data errors? Remove from forecast?,,D-2
+6,351 rows with negative qty,sales_transactions,P1,Returns in this feed or errors?,,
+7,42 rows negative price with cost > price,sales_transactions,P2,Drop or real returns?,,D-3
+8,"9,290 rows qty > 0 but price/revenue = 0 (free items?)",transaction_master,P1,Include in demand forecast?,,
+9,Synthetic sales order / item ids; no real order numbers,sales_transactions,P2,Expected? Basket analysis not possible,,
+10,Sales history start: transactions from Nov 2021,sales_transactions,P0,Confirm complete history for forecast backtest window,,Pairs with inventory master #1 gap
+11,Join price book for discount / launch price / clearance?,price_book,P1,Confirm if pricing features needed; feed join keys,,Discount cols stubbed in build; DE + client

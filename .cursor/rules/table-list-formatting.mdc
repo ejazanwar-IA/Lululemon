@@ -1,0 +1,22 @@
+---
+description: Formatting convention for Lululemon table lists
+alwaysApply: true
+---
+
+# Table List Formatting
+
+When listing Lululemon database tables in chat, docs, or generated markdown tables:
+
+- Put the schema or dataset context in the column header, not repeated in every row.
+- Use row values with only the table name unless the user explicitly asks for fully qualified names.
+- Do not include the project name by default for Lululemon BigQuery tables, since `lululemon-01042025` is the assumed project context.
+- Use headers like `Raw table (lulu_sourcing_dev)`, `Intermediate table (lulu_sourcing_dev)`, or `Outbound table (lululemon_souricng_outbound)`.
+
+Example:
+
+| Raw table (lulu_sourcing_dev) | Latest sync timestamp |
+|---|---|
+| `inventory_snapshot` | `2026-06-25T00:00:00` |
+| `sales_transactions` | `2026-06-25T00:00:00` |
+
+Only use fully qualified names like `lululemon-01042025.lulu_sourcing_dev.inventory_snapshot` when the user asks for project/schema/table names explicitly or when disambiguation is required.

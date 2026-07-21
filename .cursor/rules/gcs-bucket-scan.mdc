@@ -1,0 +1,53 @@
+---
+description: GCS bucket CSV scan workflow for Lululemon client_data_lululemon. Use when the user asks to scan, check, EDA, or verify raw files in the GCS/GCP bucket (sku_details, inventory, sales, etc.).
+alwaysApply: true
+---
+
+# GCS bucket scan workflow (Lululemon)
+
+`Last updated: 2026-06-16.`
+
+When the user asks to scan or verify files in the **GCS bucket**, follow this pattern. Do **not** download full files into chat context or read entire CSVs with the Read tool.
+
+## Bucket and naming
+
+| Item | Value |
+|------|--------|
+| Live bucket | `gs://client_data_lululemon/` |
+| Platform mapping alias | `lululemon-gcs-client_data_lululemon` (connector name; bucket is **without** that prefix) |
+| File pattern | `YYYY-MM-DD/<view>_YYYYMMDDHHMMSS_<shard>.csv` |
+| Project | `lululemon-01042025` |
+
+## Required approach (cheap, scalable)
+
+1. **Discover batches first:** list objects with `gcloud storage ls`; group by embedded timestamp in filename (e.g. `sku_details_20250807_...` → batch `20250807`). Count shards per batch.
+2. **One shard per batch:** scan the lexicographically first shard of each batch before scanning all shards. A single shard is enough to gate pricing/completeness for a drop.
+3. **Stream, never load whole file:** use `gcloud storage cat gs://... | python3` row-by-row (`csv.DictReader`) or `scripts/sku_details_price_scan.py`. Constant memory; safe for 500MB+ shards.
+4. **Do not paste CSV bodies in chat:** report aggregates only: row count, % populated, top season/currency, sample 2–3 rows max.
+5. **Save artifacts:** write summary to `findings/<feed>_gcs_batch_*_scan.csv` and a short `.md` with takeaways.
+6. **Full-batch only when needed:** if one-shard gate is ambiguous, use a BQ external table on `gs://.../prefix*` with a single `COUNTIF` aggregate (cheaper than 219 local downloads).
+
+## sku_details pricing (existing script)
+
+```bash
+# Gate all batches under a prefix (one shard each)
+python3 scripts/sku_details_price_scan.py \
+  --gcs-prefix gs://client_data_lululemon/Historic/s3_to_gcs/2025-08-28/outbound/sku_details/new/ \
+  --one-per-batch
+
+# Local file the user downloaded
+python3 scripts/sku_details_price_scan.py --local "/path/to/file.csv"
+```
+
+Prior scan reference: [`findings/sku_details_gcs_batch_pricing_scan.md`](findings/sku_details_gcs_batch_pricing_scan.md).
+
+## Other feeds (inventory_snapshot, sales_transactions, etc.)
+
+Reuse the same **batch → one shard → stream → aggregate** pattern. Generalize `scripts/sku_details_price_scan.py` or add a sibling script if columns differ; do not invent a one-off full-file read.
+
+## Anti-patterns
+
+- Reading a multi-hundred-MB CSV with the Read tool
+- Sampling one shard from one batch and generalizing to the whole bucket without listing batches
+- Assuming platform mapping bucket name equals `gs://` URI without verifying with `gcloud storage ls`
+- Loading priced vs zero conclusions from BQ alone without checking which GCS batch was ingested

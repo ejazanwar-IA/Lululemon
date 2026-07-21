@@ -1,0 +1,4 @@
+batch_date,shard_count,rows_scanned,cost_pos,sell_pos,pct_cost_pos,pct_sell_pos,season_code,price_currency,shard_scanned,gcs_uri
+20250807,161,1638151,1637048,1638043,99.93,99.99,25-3FA,DUMMY_CURRENCY,sku_details_20250807_125510_0_0_0.csv,gs://client_data_lululemon/Historic/s3_to_gcs/2025-08-28/outbound/sku_details/new/sku_details_20250807_125510_0_0_0.csv
+20250905,16,118776,0,0,0.0,0.0,25-3FA,DUMMY_CURRENCY,sku_details_20250905_183826_0_0_0.csv,gs://client_data_lululemon/Historic/s3_to_gcs/2025-08-28/outbound/sku_details/new/sku_details_20250905_183826_0_0_0.csv
+20251118,42,14243,0,0,0.0,0.0,25-4WI,DUMMY_CURRENCY,sku_details_20251118_153905_0_1_0.csv,gs://client_data_lululemon/2026-05-08/sku_details_20251118_153905_0_1_0.csv

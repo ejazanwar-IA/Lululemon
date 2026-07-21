@@ -1,0 +1,131 @@
+---
+description: Notion MCP. Use when documenting in Notion, Decision Dashboard / IS UI walkthroughs, knowledge hub updates, or Notion table formatting (colgroup).
+alwaysApply: false
+---
+
+# Notion MCP — documentation workspace
+
+`Last updated: 2026-05-21 (Notion tables: full-width colgroup).`
+
+**MCP server:** `notion` (global `.cursor/mcp.json` → `https://mcp.notion.com/mcp`)
+
+When the user asks to **document in Notion**, **keep a Notion page updated**, or **add to the knowledge hub**, use Notion MCP — not only local markdown.
+
+---
+
+## P0 — Search order
+
+| Step | Where | When |
+|------|--------|------|
+| 1 | **Notion MCP `notion-search`** | Find existing page before creating duplicates |
+| 2 | **`notion-fetch`** | Read current page content before update |
+| 3 | Local `findings/notion/*.md` | Draft / backup source; sync to Notion after edit |
+| 4 | **`findings/lululemon_knowledge_bank.md`** | Curated recap — link to Notion, don't duplicate long UI docs |
+
+---
+
+## P1 — Workspace map (Lululemon)
+
+**Canonical registry:** [`findings/notion/notion_workspace_map.md`](../findings/notion/notion_workspace_map.md)
+
+| Notion page | Page ID | Use for |
+|-------------|---------|---------|
+| **Inventory Smart -Tool** (hub, top-level) | `367389502e7981af959bd4eb1d05db4b` | Parent for **new** IS module pages |
+| **Decision Dashboard — UI Walkthrough** | `367389502e79811798dcc2896a695563` | **Primary write target** — append KPI/alert/UI sections here |
+| **Lululemon EDA** | `364389502e7981c3b1ccfbe05861b00d` | Master-table EDA only (not IS UI docs) |
+
+**URLs:** `https://www.notion.so/<id-without-dashes>`
+
+### After user moves pages in Notion
+
+- Page **IDs and URLs do not change** when dragged to a new parent.
+- **Always `notion-fetch`** the hub or Decision Dashboard page first — read `<ancestor-path>` in the response.
+- Update `notion_workspace_map.md` hierarchy if the parent chain changed.
+- Do **not** recreate pages; keep writing to the same page IDs above.
+
+**Create new IS pages:** parent = **`367389502e7981af959bd4eb1d05db4b`** (hub), unless user names a different parent page ID/URL.
+
+---
+
+## P2 — Which tool to use
+
+| Action | Tool |
+|--------|------|
+| Find pages | `notion-search` (`query_type: internal`, `filters: {}`) |
+| Read page | `notion-fetch` (pass page id from search) |
+| New page | `notion-create-pages` (parent `page_id` + `properties.title` + Notion markdown `content`) |
+| Append section | `notion-update-page` → `insert_content` at `end` |
+| Edit section | `notion-fetch` first → `update_content` with exact `old_str` |
+| Replace whole page | `notion-update-page` → `replace_content` (careful — confirm with user if child pages exist) |
+
+**Markdown:** Fetch `notion://docs/enhanced-markdown-spec` resource before first write in a session if syntax is non-obvious. Use Notion `<table header-row="true">` for tables — **never** bare markdown pipe tables on Notion pages.
+
+**Titles:** Set only in `properties.title` — do not repeat as `#` heading in content.
+
+### Table layout (mandatory — user preference 2026-05-21)
+
+Every Notion table must **span the full page content width** with columns sized to content length.
+
+1. Use Notion-flavored HTML tables (not `| col | col |` markdown).
+2. **Always** include `<colgroup>` with an explicit `width` on **every** `<col>`.
+3. Set widths **proportional to the longest line** in each column (header + all body cells).
+4. Target **760–820 px total** across columns (full content width). Minimum ~70 px per column.
+5. Wider columns for long prose / code identifiers; narrower for Count, Dev %, flags.
+
+**Template (2 columns — label + long description):**
+
+```html
+<table header-row="true">
+<colgroup>
+<col width="280">
+<col width="520">
+</colgroup>
+<tr>
+<td>Column A</td>
+<td>Column B</td>
+</tr>
+<tr>
+<td>Short label</td>
+<td>Longer explanatory text that should get the wider column</td>
+</tr>
+</table>
+```
+
+**Template (3+ columns):** same pattern — compute each `width` as `(max_chars_in_col / sum_max_chars) * 800`, round to integers, adjust so sum ≈ 800.
+
+When editing an existing page, **`notion-fetch` first** — if tables lack `<colgroup>`, fix via `replace_content` or targeted `update_content`.
+
+---
+
+## P3 — Documentation workflow (Inventory Smart)
+
+1. User shares screenshot or asks about an IS screen.
+2. Search Notion for existing page on that module.
+3. Enrich from Confluence (Atlassian MCP per `lululemon-atlassian-mcp.mdc`) when platform rules needed.
+4. Update Notion page via `insert_content` or `update_content`.
+5. Mirror summary to `findings/notion/<Module>.md` for offline backup.
+
+**Sections to add per module:** Purpose → UI map (table) → user flow → Lululemon data dependencies → glossary → changelog date.
+
+---
+
+## P4 — Guardrails
+
+| Do | Don't |
+|----|-------|
+| Search before creating pages | Duplicate "Decision Dashboard" under multiple parents |
+| Append with dated changelog | `replace_content` without fetching when child pages exist |
+| Link Confluence sources in Notion | Paste secrets or credentials |
+| Tell user the Notion URL after create/update | Assume Notion MCP works without trying — if it fails, ask user to enable **notion** in Cursor → Settings → MCP and re-auth |
+
+---
+
+## P5 — MCP unavailable
+
+If Notion MCP fails:
+
+1. Write to `findings/notion/` locally.
+2. Tell user Notion MCP is unreachable; ask them to enable/reload **notion** in Cursor Settings → MCP.
+3. Offer to push to Notion once MCP is back.
+
+Pair with `.cursor/rules/lululemon-atlassian-mcp.mdc` for Confluence source material.

@@ -1,0 +1,10 @@
+---
+description: Lululemon project archived — superseded 2026-06-15 (engagement revived)
+alwaysApply: false
+---
+
+# Lululemon — archived notice (superseded)
+
+**Status:** Engagement revived June 2026. This file is kept for history only and does **not** load automatically.
+
+Use the scoped rules in this folder instead (`lululemon-bq-context`, `lululemon-postgres-ingestion`, `lululemon-knowledge-bank`, etc.). They attach when you work on files under `findings/`, `queries/`, `scripts/`, or `reference_docs/`.

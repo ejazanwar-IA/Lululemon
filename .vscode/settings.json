@@ -1,0 +1,14 @@
+{
+  "explorer.sortOrder": "modified",
+  "sortable-explorer.sortBy": "created",
+  "sortable-explorer.sortDirection": "desc",
+  "sortable-explorer.viewMode": "flat",
+  "sortable-explorer.includePatterns": [
+    "findings/**/*.md",
+    "findings/**/*.xlsx"
+  ],
+  "sortable-explorer.excludePatterns": [
+    "**/inbound_drop_agent/**",
+    "**/notion/**"
+  ]
+}

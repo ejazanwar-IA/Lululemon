@@ -1,0 +1,97 @@
+---
+description: Lululemon Postgres ingestion — global schema scope, GSM/procedure traps, DAG prep (2026-05-20)
+globs: findings/**,queries/**,scripts/**,reference_docs/**
+alwaysApply: false
+---
+
+# Lululemon Postgres ingestion (IA platform)
+
+Companion to [`lululemon-postgres-mcp.mdc`](lululemon-postgres-mcp.mdc) (MCP read-only) and [`lululemon-bq-context.mdc`](lululemon-bq-context.mdc) (BQ). Deep reference: [`findings/postgres_ingestion_platform_patterns.md`](../findings/postgres_ingestion_platform_patterns.md).
+
+## P0 — Scope (say this before any `global.*` work)
+
+1. **`global` is a schema inside the Lululemon Postgres database** (`lulu_dev` @ dev), not a shared multi-client database. Same pattern as Signet/Levi on *their* hosts.
+2. **Only touch `lulu_dev`** unless the user explicitly names another host/DB. Prod Postgres for Lululemon may not exist yet.
+3. **MCP is read-only (strict).** Per global `~/.cursor/rules/mcp-no-ddl.mdc`: never DDL/DML/`CALL` via any MCP. `INSERT`/`UPDATE`/`CALL`/`ALTER` need user approval and run via repo SQL + psql/python with `.cursor/secrets/lulu_dev_postgres.env` — never commit credentials.
+4. When reporting changes, lead with **`current_database()`** and **what tables/rows** changed — not just `global.table`.
+
+## P1 — Agent mistakes to avoid (from 2026-05-19/20 ingestion debug)
+
+| Mistake | Do instead |
+|---------|------------|
+| Flip GSM `is_attribute` without reading downstream procs | Trace guards in `build_*_attributes_filter`, `build_product_attributes`, `build_product_hierarchies_filter` (see findings doc). |
+| Assume `is_attribute=false` → only `product_master` | Platform may still require **EAV** rows in `global.product_attributes` (hardcoded `l0_name` check). |
+| Assume store/product GSM datatype matches legacy SAF/PAF columns | `INFORMATION_SCHEMA` on **both** GSM pivot cast type and target table before `CALL`. |
+| Manual `CALL global.build_*` as email login in DBeaver | `SET ROLE "mtp-dev"` first — `current_user` with `@` breaks temp table names. |
+| Re-run hierarchy build after PAF rebuild without dedupe | Pre-check + run [`queries/postgres_product_hierarchies_filter_dedupe.sql`](../queries/postgres_product_hierarchies_filter_dedupe.sql). |
+| Long diagnostics on 2M+ row tables without filters | Pre-check counts; use `LIMIT`, samples, or `pg_stat` estimates first. |
+| Conflate BQ `store_master.dc_flag` (BOOL) with PG GSM `integer` for attributes | PG `store_master.dc_flag` is BOOL; EAV may store `'0'/'1'` strings — normalize before `::integer` pivot. |
+
+## P2 — GSM → Postgres mapping rules (DI team)
+
+| `is_attribute` | Written by | Lands on |
+|----------------|------------|----------|
+| `false` + `required_in_product` | `sync_*_master` | `global.product_master` / `global.store_master` |
+| `true` + `required_in_product` | `build_product_attributes` (product) / EAV load | `global.product_attributes` / `global.store_attributes` |
+| Either | `build_*_attributes_filter` | `global.product_attributes_filter` / `global.store_attributes_filter` |
+
+**`sync_product_master` / `sync_store_master`:** only columns with `required_in_product = true` **and** `is_attribute = false`.
+
+**GSM tables live in** `global.product_generic_schema_mapping` / `global.store_generic_schema_mapping` on **`lulu_dev`** (not `lulu_ingestion_dev` BQ).
+
+## P3 — Procedure guards (check before blaming “bad data”)
+
+### Product
+
+- **`build_product_attributes_filter`** — fails if any `product_master` row lacks EAV `attribute_name = 'l0_name'` (even when GSM has `l0_name` on PM). Fix: [`queries/postgres_product_attributes_l0_name_backfill.sql`](../queries/postgres_product_attributes_l0_name_backfill.sql).
+- **`build_product_attributes`** — loops GSM where `is_attribute OR is_pk`; **skips** PM-only cols → no EAV for `l0_name` after GSM fix.
+- **`build_product_hierarchies_filter`** — `UNIQUE (path, level)`; duplicate **active** rows per `path->>'product_code'` + same `level` → UPDATE collides. Dedupe script required after PAF shape change.
+
+### Store
+
+- **`build_store_attributes_filter`** — unions PM columns + pivots `is_attribute=true`; duplicate if same col on PM and pivot (e.g. `active`). GSM: `active` → `is_attribute=false`.
+- **Type mismatches:** `loc_type_code` SAF `bigint` vs data `'S'/'W'` → `varchar`; `dc_flag` GSM `integer` pivot vs SAF `boolean`.
+
+## P4 — DAG prep order (manual / one-off on dev)
+
+After GSM upload + DDL migrations:
+
+1. `sync_product_master` / `sync_store_master`
+2. [`postgres_product_attributes_l0_name_backfill.sql`](../queries/postgres_product_attributes_l0_name_backfill.sql) (product)
+3. `create_attributes_filter_table_postgresql_*` (PAF/SAF build)
+4. [`postgres_store_attributes_filter_build_fix.sql`](../queries/postgres_store_attributes_filter_build_fix.sql) if store SAF failed before
+5. [`postgres_product_hierarchies_filter_dedupe.sql`](../queries/postgres_product_hierarchies_filter_dedupe.sql) (product, **before** hierarchy task)
+6. `create_hierarchies_filter_table_postgresql_product`
+
+## P5 — Pre-flight SQL (run via MCP before manual `CALL`)
+
+See [`queries/postgres_lulu_dev_diagnostics.sql`](../queries/postgres_lulu_dev_diagnostics.sql) sections 1–12.
+
+Quick gates:
+
+```sql
+-- Product: EAV l0_name coverage (expect 0)
+SELECT COUNT(*) FROM global.product_master pm
+WHERE NOT EXISTS (
+  SELECT 1 FROM global.product_attributes pa
+  WHERE pa.product_code = pm.product_code AND pa.attribute_name = 'l0_name');
+
+-- Product: PHF duplicate actives per SKU+level (expect 0)
+SELECT COUNT(*) FROM (
+  SELECT 1 FROM global.product_hierarchies_filter
+  WHERE active AND path->>'product_code' IS NOT NULL
+  GROUP BY path->>'product_code', level HAVING COUNT(*) > 1
+) s;
+```
+
+## P6 — Canonical alignment docs & scripts
+
+| Topic | Doc / script |
+|-------|----------------|
+| Product GSM ↔ PM ↔ PAF | [`findings/product_gsm_postgres_alignment.md`](../findings/product_gsm_postgres_alignment.md) |
+| Store GSM ↔ SM ↔ SAF | [`findings/store_gsm_postgres_alignment.md`](../findings/store_gsm_postgres_alignment.md) |
+| Platform procs & tables | [`findings/postgres_ingestion_platform_patterns.md`](../findings/postgres_ingestion_platform_patterns.md) |
+| PM DDL | [`queries/postgres_global_product_master_ddl_migration.sql`](../queries/postgres_global_product_master_ddl_migration.sql) |
+| SM DDL | [`queries/postgres_global_store_master_ddl_migration.sql`](../queries/postgres_global_store_master_ddl_migration.sql) |
+
+When the user pastes a **new** Postgres procedure error, fix the query/script **and** append a numbered trap to the findings doc (mirror Section 0.1 in `lululemon-bq-context.mdc`).

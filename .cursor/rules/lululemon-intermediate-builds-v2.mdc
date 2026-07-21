@@ -1,0 +1,53 @@
+---
+description: Canonical v2 intermediate build logic for Lululemon product, store, inventory, and transaction masters. Use when editing sourcing SQL, explaining intermediate lineage, comparing to old workbench builds, or promoting periodic scripts.
+globs:
+  - queries/**
+  - findings/**
+  - PROJECT_CONTEXT.md
+  - reference_docs/Lululemon/**
+alwaysApply: false
+---
+
+# Lululemon intermediate builds v2 (locked reference)
+
+`Locked: 2026-07-17.`
+
+## Source of truth
+
+Read **`findings/lululemon_intermediate_builds_v2_reference.md`** first. Executable authority is the four historic v2 SQL files:
+
+| Intermediate | SQL |
+|---|---|
+| `store_intermediate` | `queries/sourcing/create_store_intermediate_historic_v2.sql` |
+| `product_intermediate` | `queries/sourcing/create_product_intermediate_historic_v2.sql` |
+| `inventory_intermediate` | `queries/sourcing/create_inventory_intermediate_historic_v2.sql` |
+| `transaction_intermediate` | `queries/sourcing/create_transaction_intermediate_historic_v2.sql` |
+
+## Do not treat as current
+
+- `queries/store_master_intermediate_build.sql`
+- `queries/transaction_intermediate_build.sql`
+- `queries/inventory_intermediate_build.sql`
+- v1 `create_*_intermediate_historic.sql` (baseline for diff only)
+
+## Build order
+
+store → product → (inventory parallel) → transaction (needs product + store)
+
+## Hard rules when changing logic
+
+1. **Date window:** `DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 2 YEAR), YEAR)` for inventory + transaction historic builds.
+2. **`product_code`:** `{SKU_ID}_{ECOMM|RETAIL}`; product build expands both channels; txn joins `store_intermediate.channel`.
+3. **No live promotion without `_tmp_` pre/post comparison** unless the user explicitly asks to rebuild production tables.
+4. **Blocked stubs stay blocked** until the reference doc and user sign-off say otherwise (e.g. `cost`, `color_family`, `location_attrib_squareft`, `special_classification`).
+5. **Periodic scripts** must be updated in the same change set when historic v2 logic changes.
+
+## Quick blocked-column reminder
+
+| Table | Blocked |
+|---|---|
+| Store | `location_attrib_squareft` (0), `special_classification` (NULL) |
+| Product | `color_family` (NULL) |
+| Transaction | `cost` (zero feed), `launch_price`, `line_id`, freight/workstream/discount-adjacent stubs listed in v2 SQL header |
+
+When answering lineage or build questions, cite the reference doc and the relevant v2 SQL file; do not reconstruct logic from memory or old platform CSVs.

@@ -1,0 +1,20 @@
+.cursor/secrets/
+*.env
+!*.env.example
+.confluence_auth
+findings/inbound_drop_agent/watcher_config.yaml
+findings/inbound_drop_agent/test_drops/
+findings/inbound_drop_agent/drop_watcher_state.test.json
+
+# Logic + docs only (see CLAUDE.md) — heavy binaries and generated output excluded from git.
+.DS_Store
+.claude/settings.local.json
+.understand-anything/
+data/
+site/
+archive/
+
+# reference_docs: keep only the searchable .md extracts, not the source binaries (pdf/docx/xlsx/mp4/png).
+reference_docs/**
+!reference_docs/**/
+!reference_docs/**/*.md

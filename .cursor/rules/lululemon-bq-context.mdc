@@ -1,0 +1,461 @@
+---
+description: Lululemon BigQuery context. Workflow rules, cost-critical query rules, canonical tables, sentinels, and numbered SQL gotchas. Apply whenever writing SQL against the lululemon-01042025 project.
+globs: findings/**,queries/**,scripts/**,reference_docs/**,Self Notes/**,PROJECT_CONTEXT.md
+alwaysApply: false
+---
+
+# Lululemon BQ Context
+
+`Last updated: 2026-04-28 (v2 — restructured; G1–G10 preserved verbatim).`
+
+This file has five zones. Read them in order on a fresh task; jump to the relevant zone on follow-ups.
+
+| Zone | What it gives you |
+|---|---|
+| Section 0 Workflow rules | Behaviours the agent must follow on every BQ task |
+| Section 1 Cost rules | Mandatory shape of any query — partition/cluster filters, LIMIT defaults |
+| Section 2 Reference: datasets, tables, IDs | Lookup tables for "what to query" |
+| Section 3 Reference: sentinels & quirks | Lookup tables for "what to expect in the data" |
+| Section 4 SQL gotchas (G1–Gn) | Numbered errors-to-pattern-fixes, all in one shape |
+| Section 5 Recipes | Reusable predicate/CASE snippets |
+
+Wider context: [`findings/schema_inventory.md`](findings/schema_inventory.md), [`findings/ia_bq_patterns.md`](findings/ia_bq_patterns.md) (Signet-baseline patterns for master-build SQL).
+
+---
+
+## Section 0 — Workflow rules (for the agent)
+
+### 0.1  Every pasted SQL error becomes a new gotcha (META-RULE)
+
+Whenever the user pastes a BigQuery (or SQL) error message into chat, the assistant MUST in the same reply:
+
+1. **Fix the query** that triggered it (StrReplace / Write the affected `queries/*.sql` file).
+2. **Append a new `### GN. <short title>` entry** to Section 4 of this file using the Section 4 template (signature / root cause / fix / burned-on).
+3. **Reference the new rule number** in the reply (e.g. "captured as G11") so the user can verify it's logged.
+
+This rule is permanent: errors compound unless we turn each one into a reusable pattern. No exceptions, even for "small" errors.
+
+### 0.2  Before writing master-build SQL, consult `ia_bq_patterns.md`
+
+[`findings/ia_bq_patterns.md`](findings/ia_bq_patterns.md) catalogues 11 IA-platform conventions extracted from the Signet production repo (which Lululemon is being modelled after). Before authoring or refactoring any `*_master` build SQL — partition/cluster choice, MERGE upsert pattern, dedup recipe, `SAFE_CAST` discipline, `__ia_char_NN` text escapes, `SYNCSTARTDATETIME` lineage column — verify the proposed shape against that doc.
+
+### 0.3  Verify schemas before using raw columns
+
+Never trust DDL or sample JSON for column names or types. Run `INFORMATION_SCHEMA.COLUMNS` for the exact table first. (Origin: G9, G10. The discipline is universal, not table-specific.)
+
+### 0.4  Practice notes (not gotchas, but worth a glance)
+
+- **`SELECT DISTINCT *` over a wide projection is a smell.** It either means full-row dupes upstream (document the cause) or the DISTINCT is masking grain bugs. Use the Q3a/Q3b pattern in `queries/de_review_stage1_verification.sql` to tell which.
+- **Quote any identifier that *might* clash with a reserved word** with backticks. Costs nothing, prevents G1.
+- **For multi-dimension aggregation, prefer `GROUP BY ALL`.** When a query selects several non-aggregate dimensions, use `GROUP BY ALL` instead of manually listing every grouping column. This reduces drift when select columns are added or removed.
+  ```sql
+  -- Prefer this
+  SELECT
+    l0_name,
+    l1_name,
+    article,
+    season_code,
+    COUNT(*) AS row_count
+  FROM ...
+  GROUP BY ALL;
+
+  -- Avoid this for multi-column grouping
+  GROUP BY
+    l0_name,
+    l1_name,
+    article,
+    season_code;
+  ```
+
+---
+
+## Section 1 — Cost rules (mandatory query shape)
+
+### 1.1  Partition / cluster filters (mandatory on listed tables)
+
+| Table | Partition | Cluster | Rule |
+|-------|-----------|---------|------|
+| **`inventory_master`** (7.2B rows, 650 GB) | `date` | `store_code` | **ALWAYS add `WHERE date BETWEEN ...`**. Ideally `store_code IN (...)` too. |
+| **`transaction_master`** (389M rows, 73 GB) | `date` | `channel` | Add `WHERE date BETWEEN ...` for any query not intentionally full-history. |
+| `anaplan_transit_calender_cleaned` (51M rows) | `Datestring` | — | Add `WHERE Datestring BETWEEN ...` |
+| `anaplan_allocation_calendar_cleaned` | — | `SKU_ID` | Filter/join on `SKU_ID` for cluster pruning |
+| `anaplan_fdod_alloc_cleaned` | — | `SKU_ID` | Same |
+| `assortment_plan_cleaned` | — | `SKU_ID` | Same |
+| `transfer_orders_new_cleaned` | — | `sku_id` | Same |
+
+**Exception**: metadata queries (`__TABLES__`, `INFORMATION_SCHEMA`) don't need filters.
+
+### 1.2  Default `LIMIT` for exploratory queries
+
+When sampling/exploring (not aggregating), always add `LIMIT 100` (or smaller) until you've seen the shape. Never `SELECT *` from a partitioned big table without both a date filter *and* a `LIMIT`.
+
+---
+
+## Section 2 — Reference: datasets, tables, IDs
+
+### 2.1  Datasets in scope
+
+| Layer | Dataset | Notes |
+|---|---|---|
+| GCP project | `lululemon-01042025` | Single project for now |
+| **Raw** | `lululemon_souricng_outbound` | Note: `souricng` is the *current* live name (typo). **Cleanup target after platform alignment: `lululemon_sourcing_outbound`.** Until renamed, use the live name; don't "fix" it in queries. |
+| **Sourcing DAG output** | `lulu_sourcing_dev` | The IA Platform's Sourcing DAG materialises every BigQuery source into a table here. Destination table name = the `view` field of the Mapping table in the Data Extraction tab (NOT the source table name, NOT a hardcoded convention). Same dataset also holds mapping/orchestration config (G11). See [`Self Notes/ia_platform_sourcing_dag_behavior.md`](../../Self%20Notes/ia_platform_sourcing_dag_behavior.md) for full behaviour + pitfalls. |
+| **Masters** | `lulu_ingestion_dev` | Where `product_master`, `transaction_master`, `inventory_master`, `store_master` actually live (not in the raw dataset). One outlier: `events_master` lives in `lululemon_souricng_outbound` — historical accident, may be migrated. |
+
+### 2.2  Canonical tables — use these by default
+
+| Purpose | Canonical table | Avoid |
+|---|---|---|
+| Product Master | `product_master` | `master_table`, `master_input_imputed`, `master_validated_table_*` (modeling outputs, not raw) |
+| Transaction Master | `transaction_master` | — |
+| Inventory Master | `inventory_master` | — |
+| Store Master | `store_master` | — |
+| Fiscal Calendar | `calendar_hierarchy` | — |
+| Returns | `returns_transactions_20251119` | — |
+| Pricing | `price_book` | — |
+| DC ↔ Store map | `dc_store_mapping_cleaned_20251119` | raw `dc_store_mapping` (empty) |
+| Allocation calendar | `anaplan_allocation_calendar_cleaned` | `anaplan_allocation_calender` (empty, also note "calender" misspelling on the raw) |
+
+For anything not in this table, see [`findings/schema_inventory.md`](findings/schema_inventory.md) and [`findings/dataset_inventory.md`](findings/dataset_inventory.md).
+
+### 2.3  Product / SKU identifier formats
+
+| Format | Where it appears |
+|---|---|
+| `145328501_ECOMM` / `145328501_RETAIL` | `product_code` in product_master / transaction_master / inventory_master |
+| `145328501` (bare) | `product_code_original` in product_master, `SKU_ID` (INT64) in Anaplan tables |
+| `LU9ADVS-036716_ECOMM` | `article` in product_master |
+| `LU9ADVS-036716` | `article_original` in product_master, `ITEM_ID` in `sku_details_*` |
+| `LU9ADVS` | `STYLE_ID` — style without color |
+| `PHPSO\|LU9ADVS-036716` | `planning_style_option` in Anaplan tables |
+| `LU9ADVS-036716` | `planning_style_option_v1` (stripped prefix) |
+
+**Join-key map** (expected joins; verify on first use, then promote here):
+
+| Left | Right | Join on | Status |
+|---|---|---|---|
+| `transaction_master` | `product_master` | `product_code` (the channel-suffixed form) | Inferred — verify before promoting to verified |
+| `inventory_master` | `product_master` | `product_code` | Inferred |
+| `transaction_master` | `store_master` | `store_code` | Inferred |
+| `inventory_snapshot_cleaned` | `product_group_hierarchy_cleaned*` | `sku_id_channel` (left) → `sku_id_code` (right) — see G9 | **Verified 2026-04-17** |
+
+---
+
+## Section 3 — Reference: sentinels, quirks, dirty columns
+
+### 3.1  Sentinels
+
+| Sentinel | Type | Where | How to catch |
+|---|---|---|---|
+| `\N` (literal 2-char string) | STRING | `product_master.gender`, `assortment_plan_cleaned.PLANNING_STYLE_OPTION`, others | `IS NULL OR col = '\N' OR col = ''` (`IS NULL` alone misses it) |
+| `''` (empty) | STRING | Various | Same as above |
+| `9999-12-31` | DATE/STRING | `price_book.EFFECTIVE_TO_DAY_ID` | "Open-ended" / valid-forever marker |
+
+### 3.2  100%-zero / 100%-null columns in `transaction_master` (do not model on these)
+
+`line_id`, `launch_price`, `transaction_type`, `fullfilment_location_customer` (typo in column name), `revenue_before_tax`, `ship_to_country`, `freight_cost`, `store_contribution`, `workstream`, `currency_exchange_rate`, `order_type`, `transaction_category`, `cost`, `msrp`, `unit_discount_amount`, `total_discount_amount`, `clearance`, `clearance_price`, `flagged_rows`.
+
+Most are hardcoded NULL/0 in the master-build DDL — see [`findings/raw_to_master_lineage.md`](findings/raw_to_master_lineage.md) Section 4.
+
+### 3.3  `transaction_master` zero-qty rows
+
+~27% of rows have `qty = 0 AND revenue = 0 AND price = 0`. **For real-sales modeling, filter `WHERE qty > 0 AND revenue > 0`.**
+
+### 3.4  Column typos & columns with spaces (use as-is — don't "correct")
+
+| Table | Column | Note |
+|---|---|---|
+| `transaction_master` | `fullfilment_location_customer` | should be "fulfillment"; live name is the typo |
+| Raw dataset | `souricng` (in the dataset name itself) | typo, see Section 2.1 |
+| Raw | `anaplan_allocation_calender` (empty) | "calender" typo on the raw (use `_cleaned` variant which has the correct spelling) |
+| `anaplan_fdod_replen_cleaned` | `` `Planning Style Option` `` , `` `Final FDOD` `` | space in name; quote with backticks |
+| `min_pres_eol` | `` `Min Pres` `` | space in name; quote with backticks |
+
+### 3.5  String-typed numerics (always `SAFE_CAST` before math)
+
+| Table | Columns |
+|---|---|
+| `price_book` | `*_PRICE` (all of them) |
+| `sku_details_cleaned*` | `COST_PRICE`, `SELLING_PRICE` (both 0 across all rows in the `_20251119` variant — kills downstream cost/msrp; see [`findings/master_table_build_logic.md`](findings/master_table_build_logic.md)) |
+| `inventory_snapshot_cleaned` | `UNITS_*` |
+| `transfer_orders_cleaned_20251119` | `DATE_SHIPPED` is STRING (siblings are DATE) |
+
+---
+
+## Section 4 — SQL gotchas (numbered, fixed-shape)
+
+> **Template for any new gotcha** (the META-RULE in Section 0.1 enforces this shape):
+> ```
+> ### Gn. <one-line title>
+>
+> **Error signature:** `<copy-pasteable substring of the error>`
+> **Root cause:** <one sentence>
+> **Fix:**
+> | Don't | Do |
+> |---|---|
+> | … | … |
+> **Burned on:** queries/<file>.sql (line N), <date>
+> ```
+
+### G1. Reserved keywords cannot be used as column aliases
+
+**Error signature:** `Syntax error: Unexpected keyword ROWS` (or RANGE, GROUPS, ORDER, PARTITION, OVER, WINDOW, QUALIFY, INTERVAL, HASH, LOOKUP, TABLESAMPLE, MERGE, STRUCT, ARRAY, EXCEPT, INTERSECT, UNION).
+**Root cause:** Many BQ keywords are forbidden as bare aliases; the error surfaces at the *reference* site (e.g. another CTE), not the definition.
+**Fix:** never use these as bare aliases. If you must, backtick: `` AS `rows` ``.
+
+| Don't | Do |
+|---|---|
+| `AS rows` | `AS row_count` |
+| `AS range` | `AS value_range` |
+| `AS order` | `AS sort_order` or `AS ord` |
+| `AS groups` | `AS group_count` |
+| `AS type` | `AS type_name` (usually safe but err on caution) |
+
+### G2. Numeric-looking columns in raw tables are often STRING
+
+**Error signature:** `No matching signature for operator = for argument types: STRING, INT64`
+**Root cause:** Many `*_cleaned*` raw tables store numeric values as `STRING`, including blank strings and `'\N'` sentinels.
+**Fix:** always `SAFE_CAST(col AS FLOAT64)` (or `INT64`) when doing math, aggregation, or numeric comparison on raw tables. Known offenders listed in Section 3.5.
+**Burned on:** multiple — this is a class of error, not a single instance.
+
+### G3. `__TABLES__` uses `table_id`, not `table_name`
+
+**Error signature:** `Name table_name not found inside t`
+**Root cause:** Legacy `<dataset>.__TABLES__` exposes `table_id`, `row_count`, `size_bytes`, `creation_time`, `last_modified_time`, `type`. The newer `INFORMATION_SCHEMA.TABLES` exposes `table_name`. Mixing the two (e.g. in a `UNION ALL`) trips the error.
+**Fix:** pick one API and stick with it per query.
+
+### G4. Multi-level aggregation needs a `GROUP BY` modifier
+
+**Error signature:** `Multi-level aggregation requires the enclosing aggregate function to have one or more GROUP BY modifiers`
+**Root cause:** Nesting aggregates inline (e.g. `ARRAY_AGG(COUNT(*) OVER ...)` or `SUM(COUNT(*))` without grouping).
+**Fix:** split into two CTEs — inner CTE does the first aggregation with explicit `GROUP BY`, outer query aggregates over the CTE.
+
+### G5. String-sentinel check on a non-STRING column
+
+**Error signature:** `No matching signature for operator =` (when comparing INT64/FLOAT64 to `''` or `'\N'`)
+**Root cause:** `'`, `'\N'`, and friends only make sense on STRING columns.
+**Fix:**
+
+| Column type | Null/sentinel check |
+|---|---|
+| STRING | `IS NULL OR col = '' OR col = '\N'` |
+| INT64 / FLOAT64 | `IS NULL` (plus `= 0` if zero is also a sentinel) |
+| Defensive (unknown type) | See G10 |
+
+### G6. _(promoted to Section 0.4 practice note — `SELECT DISTINCT *` is a grain-bug smell, not an error.)_
+
+### G7. _(merged into G1 — backtick when in doubt.)_
+
+### G8. `_20251119` suffix is not reliable on raw tables
+
+**Error signature:** `Not found: Table ...sku_details_cleaned_20251119 was not found in location US`
+**Root cause:** The PC team's master-build DDL (`reference_docs/Lululemon/Master Table Build Logic/master_table_build_queries_20251119.csv`) references `_20251119`-suffixed raw tables — but several of those don't actually exist in BQ.
+
+**Fix — verified-canonical tables:**
+
+| Prefer this | Not this |
+|---|---|
+| `sku_details_cleaned` | ~~`sku_details_cleaned_20251119`~~ does not exist |
+| `inventory_snapshot_cleaned` | — |
+| `promotional_events_cleaned` | — |
+| `calendar_hierarchy` | — |
+
+**Suffix-canonical (both exist, suffix is the live one):**
+
+| Use | Notes |
+|---|---|
+| `product_group_hierarchy_cleaned_20251119` | also `_cleaned` exists; `inventory_master` build uses the unsuffixed one |
+| `location_group_hierarchy_cleaned_20251119` | |
+| `location_details_cleaned_20251119` | |
+| `sales_transactions_4y_cleaned_20251119` | |
+| `product_attribute_s_20251119` | |
+
+**Process rule:** before authoring a new verification/EDA query, sanity-check existence with `queries/raw_source_table_existence_check.sql` (or `SELECT 1 FROM <tbl> LIMIT 0`). When citing the DDL in docs, keep the literal `_20251119` name (source-of-truth for what PC wrote); when *executing*, use the existence-verified name.
+**Burned on:** `queries/raw_source_verification_phase1.sql`, then `queries/de_review_stage1_verification.sql`.
+
+### G9. Master-build DDL is not a trustworthy schema reference for raw tables
+
+**Error signature:** `Unrecognized name: <column>` against a raw table (when the column came from upstream DDL)
+**Root cause:** The DDL may have been written against a now-replaced table or a typo'd column name. Builds may have succeeded historically; that doesn't mean the column still exists.
+**Fix process:**
+
+1. Before using any raw column, run `INFORMATION_SCHEMA.COLUMNS` for the exact table:
+   ```sql
+   SELECT column_name, data_type
+   FROM `<dataset>.INFORMATION_SCHEMA.COLUMNS`
+   WHERE table_name = '<raw_table>'
+   ORDER BY ordinal_position;
+   ```
+2. If a check spans `_cleaned` vs `_cleaned_20251119`, assume **columns may have been renamed between them** — verify in both before joining.
+3. When asking "are these two tables the same?", answer from `__TABLES__` first (`row_count`, `size_bytes`, `last_modified_time`) — column-name-free and immediately conclusive.
+
+**Burned on:** Q4 of `queries/de_review_stage1_verification.sql`. The `inventory_master` DDL claimed `product_group_hierarchy_cleaned.sku_id_channel` exists; the real build uses `A.sku_id_channel = B.sku_id_code`. **Resolution (2026-04-17):** canonical SKU key in `product_group_hierarchy_cleaned*` is `sku_id_code`. `sku_id_channel` only exists on the transactional/inventory side and joins *to* `sku_id_code` on the hierarchy side.
+
+### G10. `col IN ('', '\N')` fails on INT64 (sample JSON quotes everything)
+
+**Error signature:** `No matching signature for operator IN for argument types INT64 and {STRING}`
+**Root cause:** BigQuery JSON output quotes *every* value, so a sample showing `"ID": "158768468"` tells you nothing about the underlying type — it may be INT64, not STRING.
+**Fix — two patterns:**
+
+1. **Known-typed column** — apply G5 directly. Only string-sentinel `IN` on STRING columns.
+2. **Unknown-typed / defensive** — wrap with `CAST(col AS STRING)`:
+   ```sql
+   COUNTIF(col IS NULL OR CAST(col AS STRING) IN ('', '\N')) AS null_col
+   ```
+   For INT64 the `IN (...)` branch is always FALSE (since `CAST(123 AS STRING) = '123'`), so the predicate collapses to `IS NULL`, which is the correct INT64 semantic.
+
+**Process rule:** before any bulk null/blank check on a new table, run G9's `INFORMATION_SCHEMA.COLUMNS` first to get real types.
+**Burned on:** `queries/sku_details_raw_eda_phase1_consolidated.sql` line 71 — sample showed `"ID": "158768468"` (quoted), actual type was `INT64`.
+
+### G11. Lululemon mapping tables live in `lulu_sourcing_dev`, not `lulu_ingestion_dev`
+
+**Error signature:** `Not found: Table lululemon-01042025:lulu_ingestion_dev.mapping was not found in location US`
+**Root cause:** `mapping` / `view_mapping_table` are IA platform config tables used by Signet/Levi steady-state SQL to drive incremental filter windows. For Lululemon they exist in `lulu_sourcing_dev`, not `lulu_ingestion_dev`.
+**Fix:**
+| Don't | Do |
+|---|---|
+| Query `lululemon-01042025.lulu_ingestion_dev.mapping` | Query `lululemon-01042025.lulu_sourcing_dev.mapping` |
+| Assume the Signet two-table join is always required | Prefer `lulu_sourcing_dev.mapping` directly when it already has `view`, `intermediate_table`, and `filter_param`; use `view_mapping_table` only for extraction/source-config fields |
+**Burned on:** ad-hoc Lululemon inventory incremental MERGE draft, 2026-05-04.
+
+### G12. Live raw dataset keeps the `souricng` typo
+
+**Error signature:** `Not found: Dataset lululemon-01042025:lululemon_sourcing_outbound was not found in location US`
+**Root cause:** The live Lululemon raw dataset is misspelled as `lululemon_souricng_outbound`. Queries that "correct" it to `lululemon_sourcing_outbound` will fail even though the table exists in the typo'd dataset.
+**Fix:**
+| Don't | Do |
+|---|---|
+| Query `lululemon-01042025.lululemon_sourcing_outbound.transaction_master` | Query `lululemon-01042025.lululemon_souricng_outbound.transaction_master` |
+| Rename the dataset typo inside ad-hoc SQL | Use the live dataset name until the platform is actually renamed |
+**Burned on:** ad-hoc US/Canada SKU count query, 2026-05-05.
+
+### G13. `ORDER BY` after `UNION ALL` can only see projected columns
+
+**Error signature:** `Unrecognized name: sort_order`
+**Root cause:** In a `UNION ALL`, the final `ORDER BY` operates on the combined result schema. If `sort_order` is not selected by the union branches, BigQuery cannot order by it.
+**Fix:**
+| Don't | Do |
+|---|---|
+| Drop `sort_order` in each `SELECT`, then `ORDER BY sort_order` | Keep `sort_order` inside the union result, wrap it in an outer `SELECT`, then hide `sort_order` outside |
+| `SELECT country, sku_count FROM a UNION ALL SELECT country, sku_count FROM b ORDER BY sort_order` | `SELECT country, sku_count FROM (... SELECT country, sku_count, sort_order ... UNION ALL ... ) ORDER BY sort_order` |
+**Burned on:** ad-hoc US/Canada/all-countries SKU count query, 2026-05-05.
+
+### G14. `store_master.dc_flag` is BOOL, not INT64
+
+**Error signature:** `No matching signature for operator = for argument types: BOOL, INT64`
+**Root cause:** `store_master.dc_flag` is a Boolean flag. Comparing it to `0` or `1` fails in BigQuery because BOOL and INT64 are not comparable.
+**Fix:**
+| Don't | Do |
+|---|---|
+| `sm.dc_flag = 0` | `sm.dc_flag = FALSE` |
+| `sm.dc_flag = 1` | `sm.dc_flag = TRUE` |
+| `COALESCE(sm.dc_flag, 0) = 0` | `COALESCE(sm.dc_flag, FALSE) = FALSE` |
+**Burned on:** inventory/store SKU count query, 2026-05-05.
+
+### G15. Postgres dynamic `EXECUTE` cannot run a null query string
+
+**Error signature:** `query string argument of EXECUTE is null`
+**Root cause:** A PL/pgSQL function built a dynamic SQL statement from metadata, but one required mapping/template/query field was NULL or blank, so `EXECUTE <sql_text>` received NULL.
+**Fix:**
+| Don't | Do |
+|---|---|
+| Save `generic_master_mapping` rows before confirming the referenced schema mapping has a non-null query/template for every master | Validate the mapping metadata first; reject rows where the dynamic SQL source field is `NULL` or `''` |
+| Assume Boolean-looking spreadsheet cells and blank cells are harmless | Normalize booleans and blanks explicitly before passing JSON into `data_platform.save_generic_master_mapping(jsonb)` |
+| Debug only the master row (`inventory_master`, `product_master`) | Check both the master mapping row and the referenced `*_generic_schema_mapping` row because the null SQL is often inherited from the schema mapping |
+**Burned on:** `data_platform.save_generic_master_mapping(jsonb)` for `inventory_master` / `product_master` generic mapping save, 2026-05-07.
+
+### G16. DDL jobs bill via `lululemon-data-scan`, not the data project
+
+**Error signature:** `User does not have bigquery.jobs.create permission in project lululemon-01042025`
+**Root cause:** `--project_id` on `bq query` is the **job billing project**, not just metadata context. Analyst accounts often have `jobs.create` on `lululemon-data-scan` but not on `lululemon-01042025`. Fully qualified table names in the SQL still target `lululemon-01042025.*` datasets.
+**Fix:**
+| Don't | Do |
+|---|---|
+| `bq query --project_id=lululemon-01042025 ...` for CREATE/MERGE/DDL | `bq query --project_id=lululemon-data-scan --use_legacy_sql=false < queries/...sql` |
+| Assume read-only billing project cannot write cross-project | Data-scan can CREATE into `lulu_sourcing_dev` / `lulu_ingestion_dev` when granted |
+**Burned on:** `queries/sourcing/create_fiscal_calendar_intermediate_full.sql`, 2026-05-25.
+
+### G17. `view_mapping_table.filter_param` is DATETIME; `mapping.filter_param` is TIMESTAMP
+
+**Error signature:** `Value of type TIMESTAMP cannot be assigned to filter_param, which has type DATETIME`
+**Root cause:** In `lulu_sourcing_dev`, the two platform config tables use different types for the same column name. `view_mapping_table.filter_param` = DATETIME; `mapping.filter_param` = TIMESTAMP.
+**Fix:**
+| Don't | Do |
+|---|---|
+| `CAST(NULL AS TIMESTAMP)` in MERGE into `view_mapping_table` | `CAST(NULL AS DATETIME)` for `view_mapping_table`; keep TIMESTAMP for `mapping` |
+**Burned on:** `queries/sourcing/register_fiscal_calendar_mapping.sql`, 2026-05-25.
+
+### G18. `store_anomaly_all` stale schema blocks anomaly persist (BOOL vs STRING)
+
+**Error signature:** `Query column 25 has type BOOL which cannot be inserted into column active, which has type STRING` (task `store_anomaly_data_persist`)
+**Root cause:** `store_anomaly_all` was created under an older GSM (`active` STRING, `dc_flag` INT64). Current `store_anomaly` uses BOOL per aligned store GSM. The persist task INSERT-aligns schemas and fails on type mismatch.
+**Fix:**
+| Don't | Do |
+|---|---|
+| Retry the DAG hoping types align | Drop empty/stale `store_anomaly_all` — next run recreates via `CREATE TABLE IF NOT EXISTS … AS SELECT * FROM store_anomaly LIMIT 0` |
+| Manual ALTER on a table with history you need | Pre-check row count; if 0, `DROP TABLE`; if non-zero, cast-migrate or accept history loss with DI sign-off |
+**Burned on:** `data_ingestion` run after store GSM boolean alignment, 2026-05-26. Script: `queries/bq_store_anomaly_all_schema_reset.sql`.
+
+### G19. `ROWS` cannot be used as an unquoted alias
+
+**Error signature:** `Syntax error: Unexpected keyword ROWS`
+**Root cause:** `ROWS` is a reserved BigQuery keyword and cannot be used as a bare output alias.
+**Fix:**
+| Don't | Do |
+|---|---|
+| `COUNT(*) AS rows` | `COUNT(*) AS row_count` |
+| Use a potentially reserved alias without checking | Use a descriptive non-keyword alias or quote the identifier |
+**Burned on:** ad-hoc PO requirement coverage query, 2026-07-16.
+
+### G20. BigQuery cannot apply `COUNT(DISTINCT)` directly to a STRUCT
+
+**Error signature:** `Aggregate functions with DISTINCT cannot be used with arguments of type STRUCT`
+**Root cause:** BigQuery does not support a STRUCT expression as the argument to `COUNT(DISTINCT ...)`.
+**Fix:**
+| Don't | Do |
+|---|---|
+| `COUNT(DISTINCT STRUCT(col_a, col_b))` | `COUNT(DISTINCT TO_JSON_STRING(STRUCT(col_a, col_b)))` |
+| Concatenate keys without an unambiguous encoding | Serialize the STRUCT so nulls and delimiters remain distinguishable |
+**Burned on:** ad-hoc PO requirement coverage query, 2026-07-16.
+
+---
+
+## Section 5 — Recipes (reusable predicate snippets)
+
+### 5.1  Derived `gender` for `product_master` (99.96% coverage)
+
+Raw `product_master.gender` is 73% `\N`. Use:
+
+```sql
+CASE
+  WHEN gender IS NOT NULL AND gender NOT IN ('\\N', '') THEN gender
+  WHEN l5_name LIKE 'Womens%'     THEN 'Womens'
+  WHEN l5_name LIKE 'Mens%'       THEN 'Mens'
+  WHEN l5_name LIKE 'ivivva%'     THEN 'Girls'
+  WHEN l5_name LIKE 'Lab Womens%' THEN 'Womens'
+  WHEN l5_name LIKE 'Lab Mens%'   THEN 'Mens'
+  ELSE 'Unisex'
+END
+```
+
+### 5.2  Virtual-store classification for `store_master`
+
+```sql
+-- Physical retail only
+WHERE dc_flag = 0
+  AND store_format_code NOT IN ('E-COMMERCE', 'VIRTUAL')
+  AND ws_channel NOT IN ('OUT_OF_SCOPE', 'VIRTUAL_DC')
+
+-- ECOM virtual stores
+WHERE store_format_code = 'E-COMMERCE'
+
+-- Distribution centres
+WHERE dc_flag = 1
+```
+
+### 5.3  Real-sales filter for `transaction_master`
+
+```sql
+WHERE qty > 0 AND revenue > 0
+-- excludes the ~27% zero-qty/zero-revenue rows
+```

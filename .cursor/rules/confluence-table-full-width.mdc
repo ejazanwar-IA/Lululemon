@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+
+# Confluence tables: always full width
+
+`Last updated: 2026-06-22.`
+
+When creating or editing any table inside a Confluence page (via the Atlassian MCP
+`createConfluencePage` / `updateConfluencePage`, or any other path), the table must
+render at **full page width**, not the default constrained width.
+
+## How
+
+- In the HTML / storage body you send, set `data-layout="full-width"` on every
+  `<table>` element:
+
+```html
+<table data-layout="full-width">
+  ...
+</table>
+```
+
+- Do **not** use `data-layout="default"` (page-width constrained) or
+  `data-layout="center"` for content tables. `full-width` is the default for all
+  tables unless the user explicitly asks for a narrow / centered table.
+
+## Notes
+
+- Confluence storage format stores this as the `data-layout` attribute on the
+  table; full-width makes the table span the whole content area (wide-mode).
+- If a table was already created without it, set `data-layout="full-width"` when
+  next editing the page.
+- Still set `data-layout="full-width"` on every table, including tables nested
+  inside expand macros / panels / layout columns.
+
+## Caveat: full-width only breaks out for top-level tables
+
+`full-width` only renders edge-to-edge for tables at the **top level** of the page
+body. A table nested inside an **expand macro**, **panel**, or **layout column** is
+capped at that container's width, so the attribute has no visible effect there.
+This is a Confluence platform constraint, not a markup error.
+
+- If a table must be visually full-width, place it at the top level (outside any
+  expand/panel/column), e.g. under a plain heading.
+- If collapsible/expand sections are required, accept that their nested tables
+  render at the container width. Do not keep re-editing trying to force it wider;
+  explain the tradeoff to the user instead.

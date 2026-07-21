@@ -1,0 +1,11 @@
+S.no,Open Q,Source Data,Priority,Action Item,Response (Client),Notes
+1,Store/DC universe for PSS × store/DC × week/day: which locations in scope?,"store_master, location_details",P0,"List DCs, retail, ecomm virtual stores in forecast",,F-2
+2,"Submarket channel definition; map to store master (s1–s4, channel)",store_master,P0,Provide mapping table for PSO-level outputs,,F-3
+3,"China ecomm: Tmall (45189), WeChat (45187), JD (45186); separate channels?",store_master,P0,Confirm vs single China ecomm,,Partial; IA identified IDs
+4,95 digital / virtual stores; only ~10 transact; classify non-transacting?,store_master,P1,"Drop-ship, placeholders, or new launches?",,F-6
+5,636 stores never appear in transactions,"store_master, sales_transactions",P1,"Expected (DC, virtual, out-of-scope)? Exclude?",,
+6,Cmnty vs Community spelling (39 stores),location_details,P1,Standardize at source,,
+7,21 channel codes with zero transactions,store_master,P2,Expected in universe?,,
+8,Closed indicator / active null for 199 stores (mostly new),location_details,P1,Populate closed/active flags,,C-1 polarity; verify with DE
+9,Store format code null for 392 stores,location_details,P1,Populate format codes,,
+10,ivivva stores / inventory; exclude from store grain?,store_master,P1,Align with inventory master #4,,Links D-5

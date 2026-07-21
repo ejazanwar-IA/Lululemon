@@ -1,0 +1,133 @@
+---
+description: Atlassian MCP (Confluence/Jira). Use for platform docs, sourcing, ingestion, Inventory Smart, allocation, Confluence URLs, or when local mirrors in reference_docs/ are stale or missing.
+alwaysApply: false
+---
+
+# Atlassian MCP — Confluence & Jira
+
+`Last updated: 2026-05-21.`
+
+Impact Analytics Confluence is the **source of truth** for IA platform behaviour (sourcing, ingestion, Inventory Smart, allocation). It is a large, evolving corpus. Use a **local-first, MCP-when-needed** strategy — not MCP for every question.
+
+**MCP server:** `atlassian-mcp` (project `.cursor/mcp.json`)  
+**Site / cloudId:** `impactanalytics.atlassian.net`  
+**Primary space for platform docs:** `IA`
+
+---
+
+## P0 — Search order (mandatory)
+
+Before calling MCP, check whether the answer is already offline:
+
+| Step | Where | When |
+|------|--------|------|
+| 1 | `findings/lululemon_knowledge_bank.md` | Curated Lululemon + IS summaries |
+| 2 | Local Confluence mirrors (below) | Known handbook trees already fetched |
+| 3 | `rg` / semantic search in repo + `Self Notes/` | Project-specific notes and SQL |
+| 4 | **Atlassian MCP** | Unknown topic, stale mirror, child pages not mirrored, or user pasted a Confluence URL |
+
+Do **not** skip steps 1–3 and blast Confluence on every task.
+
+---
+
+## P1 — Which MCP tool to use
+
+| Need | Tool | Notes |
+|------|------|-------|
+| Find pages by topic | `search` | **Default** for Confluence + Jira discovery (Rovo Search) |
+| Precise Confluence filter | `searchConfluenceUsingCql` | When user says CQL or you need `space`, `ancestor`, `label`, date filters |
+| Read one page by ID or URL | `getConfluencePage` | `contentFormat: markdown`; `pageId` from URL `/pages/<id>/` |
+| List child pages | `getConfluencePageDescendants` | Handbook trees, module folders |
+| Fetch from search ARI | `fetch` | When `search` returns an ARI, not a numeric page ID |
+| Jira tickets | `getJiraIssue`, `searchJiraIssuesUsingJql` | Only when task is ticket-driven |
+
+**Always read the tool schema** in `mcps/user-atlassian-mcp/tools/` before first use in a session.
+
+### `getConfluencePage` defaults
+
+```text
+cloudId: impactanalytics.atlassian.net
+contentFormat: markdown
+pageId: <numeric id from URL>
+```
+
+---
+
+## P2 — Known local mirrors (offline)
+
+Refresh via MCP when content may have changed, then run the mirror script for that tree.
+
+| Tree | Confluence parent ID | Local path | Refresh script |
+|------|---------------------|------------|----------------|
+| Inventory Smart Handbook | `2696609793` | `reference_docs/Lululemon/InventorySmart_Handbook/` | `scripts/save_handbook_page.py` + `scripts/mirror_inventorysmart_handbook.py` |
+| Sourcing Tables (intermediate builds) | `966393875` | `reference_docs/IA_Platform/Sourcing_Tables/` | `scripts/mirror_confluence_pages.py` |
+| Decision Dashboard (PDF) | — | `reference_docs/Lululemon/Decision_Dashboard_handbook.pdf` | Manual / re-export |
+
+**Child IDs under Sourcing Tables:** `966295603`, `966361118`, `966557729`, `966328366`, `966459429`.
+
+When MCP returns a **new** high-value tree the team will reuse, offer to mirror it under `reference_docs/` (same pattern as above).
+
+---
+
+## P3 — How to explore the “content sea”
+
+1. **Start narrow:** `search` with module name + concept (e.g. `Inventory Smart product status sku_status`, `sourcing intermediate MERGE`).
+2. **Scope to space when noisy:** CQL `space = IA AND text ~ "product_attributes_filter" AND type = page`.
+3. **Walk the tree:** parent page → `getConfluencePageDescendants` → fetch only relevant children (batch if many).
+4. **Prefer handbook pages over random comments** for implementation truth.
+5. **Cross-check client reference codebase** (`insideinsight-mtp-bigquery` per client-reference rule) when Confluence shows OOTB SQL — Lululemon may differ.
+6. **Capture durable learning:** append to `findings/lululemon_knowledge_bank.md` or `Self Notes/`; mirror if the tree will be referenced again.
+
+---
+
+## P4 — Guardrails
+
+| Do | Don't |
+|----|-------|
+| Read pages/issues yourself via MCP | Ask the user to paste Confluence when MCP is available |
+| Use markdown format for reading | Default to `updateConfluencePage` / `createConfluencePage` |
+| Fetch descendants before assuming a parent body has the content | Assume an index page contains the SQL (often empty — see Sourcing Tables) |
+| Note when Confluence links out to Google Sheets / Colab only | Treat a link-only page as fully mirrored |
+| Retry once on transient `fetch failed` | Give up after one failure on large trees |
+
+**Writes (Confluence/Jira create/edit/transition):** only when the user **explicitly** asks. Default is read-only exploration.
+
+---
+
+## P5 — Lululemon-relevant Confluence themes
+
+When searching, these clusters usually matter for this project:
+
+| Theme | Example search terms |
+|-------|---------------------|
+| Sourcing / intermediates | `sourcing`, `intermediate`, `SYNCSTARTDATETIME`, `filter_param` |
+| Master ingestion | `sync_product_master`, `generic_schema_mapping`, `validated_table` |
+| Inventory Smart config | `sku_status`, `product_store_mapping`, `RCL`, `product_attributes_filter` |
+| Allocation / CNA | `create new allocation`, `final need`, `DC store policy` |
+| Derived / dashboard | `article_inventory_dashboard`, `decision dashboard`, `derived tables` |
+
+Pair Confluence answers with:
+
+- `.cursor/rules/lululemon-bq-context.mdc` — BQ tables, gotchas
+- `.cursor/rules/lululemon-postgres-ingestion.mdc` — `lulu_dev` GSM / sync / build procs
+- `.cursor/rules/lululemon-inventorysmart-handbook.mdc` — IS handbook mirror index
+- `.cursor/rules/ia-platform-sourcing-tables.mdc` — sourcing intermediate mirror index
+
+---
+
+## P6 — MCP unavailable
+
+If Atlassian MCP is disabled, auth fails, or a Confluence/Jira call errors out:
+
+1. **Use offline only** — local mirrors, `findings/`, `Self Notes/`, repo search. Answer from what you have.
+2. **Do not fake Confluence lookups** — never imply a page was read live if MCP did not succeed.
+3. **Ask the user to check MCP** — say clearly that live Confluence would help (or is required for this question) and ask them to:
+   - Open **Cursor → Settings → MCP** and confirm `atlassian-mcp` is enabled
+   - Reload/restart the MCP server if it shows disconnected
+   - Re-authenticate if prompted (OAuth session may have expired)
+   - Retry the question once MCP is back up
+4. **Say what you could not verify** — list which pages/topics still need a live fetch so the user knows what's missing from offline sources.
+
+Proceed with best-effort offline answers while MCP is down; do not block entirely unless the task strictly requires unread Confluence content.
+
+For **Notion documentation**, use `.cursor/rules/lululemon-notion-mcp.mdc`.

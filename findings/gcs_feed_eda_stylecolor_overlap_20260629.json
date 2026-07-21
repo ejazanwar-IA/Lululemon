@@ -1,0 +1,192 @@
+{
+  "analysis": "stylecolor_store_overlap",
+  "eligibility_files_scanned": 1,
+  "eligibility_planning_style_options_estimate": 60385,
+  "eligibility_rows_scanned": 3779130,
+  "matched_eligibility_planning_style_options_estimate": 59186,
+  "matched_eligibility_rows": 3572082,
+  "matched_eligibility_rows_pct": 94.5213,
+  "matched_pso_pct_estimate": 98.0144,
+  "notes": {
+    "coverage": "Eligibility source uses PLANNING_STYLE_OPTION_ID; style colour can be derived when that key maps through style_option."
+  },
+  "pso_with_multiple_colourways": 102,
+  "pso_with_multiple_colourways_pct": 0.0219,
+  "pso_with_multiple_style_options": 2331,
+  "pso_with_multiple_style_options_pct": 0.5002,
+  "sample_unmatched_pso": [
+    "LM9AKPS-053674",
+    "LW2DPNS-0001",
+    "LM3DQBS-1966",
+    "LM9ANHS-043646",
+    "LM9AU5S-053674",
+    "LU9AKDS-0001",
+    "LW7DQQS-0001",
+    "LU9BU1S-064649",
+    "LW5FZTA-0001",
+    "LM3FDVS-0001"
+  ],
+  "style_option_metrics": {
+    "column_count": 9,
+    "column_population": {
+      "COLOURWAY_ID": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "DELETE_IND": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "IS_PRIMARY_STYLE_OPTION": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "ORIGINAL_STYLE_ID": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "PLACEHOLDER_FLAG": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "PLANNING_STYLE_OPTION_ID": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "STYLE_ID": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "STYLE_OPTION_ID": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      },
+      "STYLE_OPTION_NAME": {
+        "missing": 0,
+        "missing_pct": 0.0,
+        "nonnull": 469512,
+        "nonnull_pct": 100.0
+      }
+    },
+    "columns": [
+      "STYLE_OPTION_ID",
+      "STYLE_ID",
+      "COLOURWAY_ID",
+      "PLANNING_STYLE_OPTION_ID",
+      "STYLE_OPTION_NAME",
+      "IS_PRIMARY_STYLE_OPTION",
+      "DELETE_IND",
+      "PLACEHOLDER_FLAG",
+      "ORIGINAL_STYLE_ID"
+    ],
+    "date_ranges": {},
+    "distinct_estimates": {
+      "colourways": 47354,
+      "planning_style_options": 461044,
+      "pso_style_option": 463993,
+      "style_options": 466199,
+      "styles": 80733
+    },
+    "feed": "style_option",
+    "files_scanned": 5,
+    "future_counts": {},
+    "grain_check": {
+      "distinct_estimate": 463993,
+      "duplicate_pct_estimate": 1.1755,
+      "duplicate_rows_estimate": 5519,
+      "grain_name": "pso_style_option",
+      "row_count": 469512
+    },
+    "missing_columns_expected": [],
+    "notes": {
+      "approx_distinct": "Distinct counts use KMV approximate distinct sketches for memory safety."
+    },
+    "numeric": {},
+    "prefix": "gs://client_data_lululemon/Historic/s3_to_gcs/consolidated/style_option/",
+    "rows": 469512,
+    "sample_rows": [
+      {
+        "COLOURWAY_ID": "0001",
+        "DELETE_IND": "false",
+        "IS_PRIMARY_STYLE_OPTION": "true",
+        "PLACEHOLDER_FLAG": "false",
+        "PLANNING_STYLE_OPTION_ID": "LW5JY6A-0001",
+        "STYLE_ID": "LW5JY6A",
+        "STYLE_OPTION_ID": "LW5JY6A-0001"
+      },
+      {
+        "COLOURWAY_ID": "0002",
+        "DELETE_IND": "false",
+        "IS_PRIMARY_STYLE_OPTION": "true",
+        "PLACEHOLDER_FLAG": "false",
+        "PLANNING_STYLE_OPTION_ID": "LW5JY6A-0002",
+        "STYLE_ID": "LW5JY6A",
+        "STYLE_OPTION_ID": "LW5JY6A-0002"
+      },
+      {
+        "COLOURWAY_ID": "077007",
+        "DELETE_IND": "false",
+        "IS_PRIMARY_STYLE_OPTION": "true",
+        "PLACEHOLDER_FLAG": "false",
+        "PLANNING_STYLE_OPTION_ID": "LW5JY6A-077007",
+        "STYLE_ID": "LW5JY6A",
+        "STYLE_OPTION_ID": "LW5JY6A-077007"
+      }
+    ],
+    "top_values": {
+      "DELETE_IND": [
+        {
+          "pct": 99.996,
+          "rows": 469493,
+          "value": "false"
+        },
+        {
+          "pct": 0.004,
+          "rows": 19,
+          "value": "true"
+        }
+      ],
+      "IS_PRIMARY_STYLE_OPTION": [
+        {
+          "pct": 99.2575,
+          "rows": 466026,
+          "value": "true"
+        },
+        {
+          "pct": 0.7425,
+          "rows": 3486,
+          "value": "false"
+        }
+      ],
+      "PLACEHOLDER_FLAG": [
+        {
+          "pct": 97.9871,
+          "rows": 460061,
+          "value": "false"
+        },
+        {
+          "pct": 2.0129,
+          "rows": 9451,
+          "value": "true"
+        }
+      ]
+    }
+  },
+  "style_option_planning_style_options": 466026
+}

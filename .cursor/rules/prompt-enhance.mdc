@@ -1,0 +1,63 @@
+---
+description: Prompt preamble for non-trivial tasks. Use when scope is ambiguous, multi-step, debugging, or before >2 tool calls; skip for trivial one-liner edits.
+alwaysApply: false
+---
+
+# Prompt Enhancement
+
+Zero-infra prompt enhancer. Complements `karpathy-guidelines.mdc` by making "Think Before Coding" concrete and consistent.
+
+## When to apply (and when not to)
+
+**Apply** on:
+- Feature work, refactors, multi-file changes
+- Debugging, "fix the X" / "why is Y broken"
+- Ambiguous asks where >1 reasonable interpretation exists
+- Plan mode, design questions, architectural choices
+- Any prompt where you'd otherwise need to guess scope
+
+**Skip** on:
+- Single-line edits ("rename this var to foo")
+- Direct reads ("show me file X", "what does Y do")
+- Pure conversation / informational Q&A
+- Continuations of an in-flight task where context is already established
+
+The test: if you're about to make >2 tool calls or write code based on a guess, you need the preamble. If you can answer in one sentence or one tool call, skip it.
+
+## Required preamble for non-trivial prompts
+
+Before the first tool call (or first code block), output a compact block:
+
+**Understanding:** <one-sentence restatement in your own words — not the user's verbatim>
+**Assumptions:** <0-3 bullets, only the load-bearing ones>
+**Success criteria:** <what makes this verifiably done>
+
+Then proceed. Keep the whole block under ~6 lines — this is a sanity check, not a status report.
+
+## Escalation rule
+
+If any assumption is **load-bearing AND uncertain**, STOP. Ask via `AskQuestion` before any tool call or edit.
+
+Load-bearing = the work goes meaningfully wrong if the assumption is wrong. Style/cosmetic guesses don't count; scope, target file, semantic intent, and "which X" choices do.
+
+## Anti-patterns
+
+- Don't preamble trivial tasks — adds noise, trains the user to skim.
+- Don't list assumptions you don't actually depend on (no "I assume Python 3" filler).
+- Don't restate the user's words verbatim — that's parroting, not understanding.
+- Don't list more than 3 assumptions. If you have more, the prompt is too ambiguous; ask instead.
+- Don't use the preamble as a substitute for asking. If you're guessing on something load-bearing, ask.
+
+## Example
+
+User: "fix the bug in the inventory query"
+
+**Understanding:** Diagnose and fix a defect in an inventory-related SQL query in this workspace.
+**Assumptions:** none safe to make — multiple inventory queries exist and no specific symptom is given.
+**Success criteria:** depends on which query and which symptom.
+
+→ Ask: which file, and what's the observed vs. expected behaviour?
+
+## Why this exists
+
+Most "the agent did the wrong thing" failures trace back to a silent guess on an ambiguous prompt. A 4-line preamble surfaces the guess before the work happens, so the user can correct it cheaply instead of after a 10-tool-call detour.

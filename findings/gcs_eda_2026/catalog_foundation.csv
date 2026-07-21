@@ -1,0 +1,4 @@
+feed,files,size_GB,sample_file
+CH,1,0.0,week.csv_0_0_0.csv
+LH,4,0.0,location_hierarchy.csv_0_0_0.csv
+SLS_INV,40,9.116,sales_inventory.csv_0_1_0.csv

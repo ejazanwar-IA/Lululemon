@@ -1,0 +1,23 @@
+---
+description: Use the Lululemon Forecasting Timelines v3 xlsx as the latest project timeline reference
+alwaysApply: true
+---
+
+# Lululemon Forecasting Timelines Reference
+
+For Lululemon demand forecasting milestone dates, workplan sequencing, and deliverable readout order, use **Forecasting Timelines v3** as the latest client reference:
+
+- Source `.xlsx`: `reference_docs/Lululemon/Timeline/lululemon_forecasting_timelines_v3.xlsx`
+- Searchable extract: `reference_docs/Lululemon/Timeline/lululemon_forecasting_timelines_v3.md`
+- Index: `reference_docs/Lululemon/Timeline/README.md`
+
+Treat Timelines v3 as authoritative over the May 4 SOW timeline chart (`findings/assets/lululemon_ia_sow_timeline_2026.png`), older workplan sheets inside the xlsx, and prior planning notes when aligning:
+
+- data transfer / ingestion / daily feed milestones
+- forecasting model build and readout dates by geography
+- SIT, UAT, handover, and Phase 2 hypercare timing
+- deliverable rollout and readout sequence
+
+If the Markdown extract conflicts with the `.xlsx`, the `.xlsx` is authoritative.
+
+Pair with the latest SOW rule (`lululemon-final-sow.mdc`) for contractual scope and deliverable grains.

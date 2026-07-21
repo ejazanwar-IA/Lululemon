@@ -1,0 +1,20 @@
+# Copy to watcher_config.yaml (gitignored) and fill bucket/drops_dir.
+# IA GCS layout: YYYY-MM-DD/<view>_YYYYMMDDHHMMSS.csv
+
+sources:
+  lulu_local:
+    type: local
+    drops_dir: "~/drops"
+
+  lulu_dev_gcs:
+    type: gcs
+    bucket: "<client-bucket>"
+    prefix: ""
+
+defaults:
+  poll_interval_seconds: 3600
+  billing_project: lululemon-data-scan
+  # Optional: restrict to these view_profile keys
+  # view_allowlist:
+  #   - inventory_snapshot
+  #   - sales_transactions
