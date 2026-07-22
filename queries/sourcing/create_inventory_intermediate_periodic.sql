@@ -111,12 +111,9 @@ latest_inventory AS (
   )
   WHERE rn = 1
 ),
--- OO formulation (same logic as create_inventory_intermediate_historic_v2.sql, added 2026-07-22):
--- open DC->store REPLEN/ALLOC transfer-order pipeline (ordered, not yet received). DATE_RECEIVED is
--- used as the close-out signal (99.997% populated) instead of UNITS_SHIPPED/DATE_SHIPPED (<1%
--- populated even when fulfilled) -- so oo cannot be cleanly separated from it (in-transit) today.
--- The balance is computed over full transfer_orders history regardless of the incremental filter_param
--- window, since an open order can predate the incremental slice of inventory rows being merged.
+-- REPLEN/ALLOC transfer orders, typed. DATE_RECEIVED (99.997% populated) is the close-out signal,
+-- not UNITS_SHIPPED/DATE_SHIPPED (<1% populated even when fulfilled). Balance is computed over full
+-- transfer_orders history since an open order can predate the incremental filter_param window.
 transfer_typed AS (
   SELECT
     SAFE_CAST(SKU_ID AS INT64) AS sku_id,
@@ -127,6 +124,7 @@ transfer_typed AS (
   FROM `lululemon-01042025.lulu_sourcing_dev.transfer_orders`
   WHERE TYPE_NAME IN ('REPLEN', 'ALLOC')
 ),
+-- +ordered on creation, -ordered on receipt.
 transfer_events AS (
   SELECT sku_id, store_code, date_created AS event_date, units_ordered AS delta
   FROM transfer_typed WHERE date_created IS NOT NULL
@@ -134,10 +132,12 @@ transfer_events AS (
   SELECT sku_id, store_code, date_received AS event_date, -units_ordered AS delta
   FROM transfer_typed WHERE date_received IS NOT NULL
 ),
+-- Collapse same-day events per key before the running balance.
 daily_events AS (
   SELECT sku_id, store_code, event_date, SUM(delta) AS net_delta
   FROM transfer_events GROUP BY 1, 2, 3
 ),
+-- Running open-quantity balance per SKU x store.
 daily_balance AS (
   SELECT
     sku_id, store_code, event_date,
@@ -147,8 +147,7 @@ daily_balance AS (
     ) AS open_qty
   FROM daily_events
 ),
--- store_code here is intentionally NOT zero-padded, matching inventory_intermediate's own raw
--- LOCATION_ID convention (unlike store_intermediate/store_master, which pad to 10 digits).
+-- store_code stays unpadded here to match inventory_intermediate's own convention (store_master pads to 10 digits).
 balance_with_channel AS (
   SELECT
     CONCAT(CAST(db.sku_id AS STRING), '_', ld_chan.channel) AS product_code,
@@ -175,9 +174,7 @@ balance_with_channel AS (
   ) ld_chan ON LPAD(db.store_code, 10, '0') = ld_chan.location_key
   WHERE ld_chan.channel IN ('RETAIL', 'ECOMM')
 ),
--- Attach oo via asof-join, then dedupe (a row can match multiple daily_balance event_dates <= its
--- date; QUALIFY keeps only the latest one). This has to happen before the final GROUP BY below,
--- since QUALIFY needs the pre-aggregation b.event_date column in scope.
+-- Attach oo via asof-join and dedupe (QUALIFY keeps only the latest matching event_date per row).
 inventory_with_oo AS (
   SELECT
     li.*,

@@ -62,8 +62,8 @@ normalized_inventory AS (
     AND i.snapshot_time IS NOT NULL
     AND lc.channel IN ('RETAIL', 'ECOMM')
 ),
--- Keep the latest snapshot per product_code, store_code, date, and channel (split out from the final
--- projection because the oo asof-join below needs its own QUALIFY/dedup pass).
+-- Latest snapshot per product_code, store_code, date, channel. Split from the final projection
+-- since the oo asof-join below needs its own QUALIFY/dedup pass.
 dedup_inventory AS (
   SELECT
     display_product_code, product_code, store_code, date, channel,
@@ -75,12 +75,8 @@ dedup_inventory AS (
     ORDER BY snapshot_time DESC, oh DESC, it DESC, available_units DESC
   ) = 1
 ),
--- OO formulation (added 2026-07-22, verified against 4.42B live rows -- 0 diffs on any other column):
--- open DC->store REPLEN/ALLOC transfer-order pipeline (ordered, not yet received).
--- NOTE: UNITS_SHIPPED/DATE_SHIPPED are populated on <1% of rows even when clearly fulfilled;
--- DATE_RECEIVED is populated on 99.997% of REPLEN/ALLOC rows, so it is used as the close-out signal
--- instead. This means oo cannot be cleanly separated from it (in-transit) -- both draw on the same
--- open DC->store pipeline until a reliable ship-date signal exists. Flagged, not resolved, per sign-off.
+-- REPLEN/ALLOC transfer orders, typed. DATE_RECEIVED (99.997% populated) is the close-out signal,
+-- not UNITS_SHIPPED/DATE_SHIPPED (<1% populated even when fulfilled).
 transfer_typed AS (
   SELECT
     SAFE_CAST(SKU_ID AS INT64) AS sku_id,
@@ -91,6 +87,7 @@ transfer_typed AS (
   FROM `lululemon-01042025.lulu_sourcing_dev.transfer_orders`
   WHERE TYPE_NAME IN ('REPLEN', 'ALLOC')
 ),
+-- +ordered on creation, -ordered on receipt.
 transfer_events AS (
   SELECT sku_id, store_code, date_created AS event_date, units_ordered AS delta
   FROM transfer_typed WHERE date_created IS NOT NULL
@@ -98,10 +95,12 @@ transfer_events AS (
   SELECT sku_id, store_code, date_received AS event_date, -units_ordered AS delta
   FROM transfer_typed WHERE date_received IS NOT NULL
 ),
+-- Collapse same-day events per key before the running balance.
 daily_events AS (
   SELECT sku_id, store_code, event_date, SUM(delta) AS net_delta
   FROM transfer_events GROUP BY 1, 2, 3
 ),
+-- Running open-quantity balance per SKU x store.
 daily_balance AS (
   SELECT
     sku_id, store_code, event_date,
@@ -111,8 +110,7 @@ daily_balance AS (
     ) AS open_qty
   FROM daily_events
 ),
--- store_code here is intentionally NOT zero-padded, matching inventory_intermediate's own raw
--- LOCATION_ID convention (unlike store_intermediate/store_master, which pad to 10 digits).
+-- store_code stays unpadded here to match inventory_intermediate's own convention (store_master pads to 10 digits).
 balance_with_channel AS (
   SELECT
     CONCAT(CAST(db.sku_id AS STRING), '_', lc.channel) AS product_code,
