@@ -92,7 +92,6 @@ normalized_inventory AS (
     CHANNEL IS NULL OR CHANNEL = '' AS channel_was_derived,
     COALESCE(UNITS_ON_HAND, 0) AS oh,
     COALESCE(UNITS_INBOUND, 0) AS it,
-    0 AS oo,
     COALESCE(UNITS_AVAILABLE, 0) AS available_units,
     SNAPSHOT_TIME AS syncstartdatetime,
     SNAPSHOT_TIME AS created_timestamp
@@ -111,6 +110,87 @@ latest_inventory AS (
     FROM normalized_inventory
   )
   WHERE rn = 1
+),
+-- OO formulation (same logic as create_inventory_intermediate_historic_v2.sql, added 2026-07-22):
+-- open DC->store REPLEN/ALLOC transfer-order pipeline (ordered, not yet received). DATE_RECEIVED is
+-- used as the close-out signal (99.997% populated) instead of UNITS_SHIPPED/DATE_SHIPPED (<1%
+-- populated even when fulfilled) -- so oo cannot be cleanly separated from it (in-transit) today.
+-- The balance is computed over full transfer_orders history regardless of the incremental filter_param
+-- window, since an open order can predate the incremental slice of inventory rows being merged.
+transfer_typed AS (
+  SELECT
+    SAFE_CAST(SKU_ID AS INT64) AS sku_id,
+    LOCATION_ID_RECEIVING AS store_code,
+    SAFE_CAST(UNITS_ORDERED AS INT64) AS units_ordered,
+    SAFE.PARSE_DATE('%Y-%m-%d', DATE_CREATED) AS date_created,
+    SAFE.PARSE_DATE('%Y-%m-%d', DATE_RECEIVED) AS date_received
+  FROM `lululemon-01042025.lulu_sourcing_dev.transfer_orders`
+  WHERE TYPE_NAME IN ('REPLEN', 'ALLOC')
+),
+transfer_events AS (
+  SELECT sku_id, store_code, date_created AS event_date, units_ordered AS delta
+  FROM transfer_typed WHERE date_created IS NOT NULL
+  UNION ALL
+  SELECT sku_id, store_code, date_received AS event_date, -units_ordered AS delta
+  FROM transfer_typed WHERE date_received IS NOT NULL
+),
+daily_events AS (
+  SELECT sku_id, store_code, event_date, SUM(delta) AS net_delta
+  FROM transfer_events GROUP BY 1, 2, 3
+),
+daily_balance AS (
+  SELECT
+    sku_id, store_code, event_date,
+    SUM(net_delta) OVER (
+      PARTITION BY sku_id, store_code ORDER BY event_date
+      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS open_qty
+  FROM daily_events
+),
+-- store_code here is intentionally NOT zero-padded, matching inventory_intermediate's own raw
+-- LOCATION_ID convention (unlike store_intermediate/store_master, which pad to 10 digits).
+balance_with_channel AS (
+  SELECT
+    CONCAT(CAST(db.sku_id AS STRING), '_', ld_chan.channel) AS product_code,
+    db.store_code,
+    db.event_date,
+    db.open_qty
+  FROM daily_balance db
+  JOIN (
+    SELECT
+      LPAD(CAST(ID AS STRING), 10, '0') AS location_key,
+      CASE
+        WHEN UPPER(COALESCE(TYPE_CODE, '')) = 'RETAIL'
+          OR UPPER(COALESCE(CHANNEL_CODE, '')) LIKE '%_RTL'
+          THEN 'RETAIL'
+        WHEN UPPER(COALESCE(TYPE_CODE, '')) = 'ECOMM'
+          OR UPPER(COALESCE(CHANNEL_CODE, '')) LIKE '%ECOMM%'
+          THEN 'ECOMM'
+      END AS channel
+    FROM `lululemon-01042025.lulu_sourcing_dev.location_details`
+    QUALIFY ROW_NUMBER() OVER (
+      PARTITION BY LPAD(CAST(ID AS STRING), 10, '0')
+      ORDER BY SYNCSTARTDATETIME DESC, ID DESC
+    ) = 1
+  ) ld_chan ON LPAD(db.store_code, 10, '0') = ld_chan.location_key
+  WHERE ld_chan.channel IN ('RETAIL', 'ECOMM')
+),
+-- Attach oo via asof-join, then dedupe (a row can match multiple daily_balance event_dates <= its
+-- date; QUALIFY keeps only the latest one). This has to happen before the final GROUP BY below,
+-- since QUALIFY needs the pre-aggregation b.event_date column in scope.
+inventory_with_oo AS (
+  SELECT
+    li.*,
+    COALESCE(b.open_qty, 0) AS oo
+  FROM latest_inventory li
+  LEFT JOIN balance_with_channel b
+    ON li.product_code = b.product_code
+    AND li.store_code = b.store_code
+    AND b.event_date <= li.date
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY li.product_code, li.store_code, li.date, li.channel, li.source_product_code, li.source_channel
+    ORDER BY b.event_date DESC
+  ) = 1
 )
 SELECT
   display_product_code,
@@ -128,7 +208,7 @@ SELECT
   SUM(available_units) AS available_units,
   DATETIME(MIN(syncstartdatetime)) AS syncstartdatetime,
   DATETIME(MIN(created_timestamp)) AS created_timestamp
-FROM latest_inventory
+FROM inventory_with_oo
 GROUP BY
   display_product_code,
   product_code,

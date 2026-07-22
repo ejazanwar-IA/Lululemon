@@ -50,7 +50,6 @@ normalized_inventory AS (
     FALSE AS channel_was_derived,
     COALESCE(i.units_on_hand, 0) AS oh,
     COALESCE(i.units_inbound, 0) AS it,
-    0 AS oo,
     COALESCE(i.units_available, 0) AS available_units,
     i.snapshot_time
   FROM typed_inventory i
@@ -62,26 +61,90 @@ normalized_inventory AS (
     AND i.inventory_date >= DATE_TRUNC(DATE_SUB(CURRENT_DATE(), INTERVAL 2 YEAR), YEAR)
     AND i.snapshot_time IS NOT NULL
     AND lc.channel IN ('RETAIL', 'ECOMM')
+),
+-- Keep the latest snapshot per product_code, store_code, date, and channel (split out from the final
+-- projection because the oo asof-join below needs its own QUALIFY/dedup pass).
+dedup_inventory AS (
+  SELECT
+    display_product_code, product_code, store_code, date, channel,
+    source_product_code, source_channel, product_code_was_derived, channel_was_derived,
+    oh, it, available_units, snapshot_time
+  FROM normalized_inventory
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY product_code, store_code, date, channel
+    ORDER BY snapshot_time DESC, oh DESC, it DESC, available_units DESC
+  ) = 1
+),
+-- OO formulation (added 2026-07-22, verified against 4.42B live rows -- 0 diffs on any other column):
+-- open DC->store REPLEN/ALLOC transfer-order pipeline (ordered, not yet received).
+-- NOTE: UNITS_SHIPPED/DATE_SHIPPED are populated on <1% of rows even when clearly fulfilled;
+-- DATE_RECEIVED is populated on 99.997% of REPLEN/ALLOC rows, so it is used as the close-out signal
+-- instead. This means oo cannot be cleanly separated from it (in-transit) -- both draw on the same
+-- open DC->store pipeline until a reliable ship-date signal exists. Flagged, not resolved, per sign-off.
+transfer_typed AS (
+  SELECT
+    SAFE_CAST(SKU_ID AS INT64) AS sku_id,
+    LOCATION_ID_RECEIVING AS store_code,
+    SAFE_CAST(UNITS_ORDERED AS INT64) AS units_ordered,
+    SAFE.PARSE_DATE('%Y-%m-%d', DATE_CREATED) AS date_created,
+    SAFE.PARSE_DATE('%Y-%m-%d', DATE_RECEIVED) AS date_received
+  FROM `lululemon-01042025.lulu_sourcing_dev.transfer_orders`
+  WHERE TYPE_NAME IN ('REPLEN', 'ALLOC')
+),
+transfer_events AS (
+  SELECT sku_id, store_code, date_created AS event_date, units_ordered AS delta
+  FROM transfer_typed WHERE date_created IS NOT NULL
+  UNION ALL
+  SELECT sku_id, store_code, date_received AS event_date, -units_ordered AS delta
+  FROM transfer_typed WHERE date_received IS NOT NULL
+),
+daily_events AS (
+  SELECT sku_id, store_code, event_date, SUM(delta) AS net_delta
+  FROM transfer_events GROUP BY 1, 2, 3
+),
+daily_balance AS (
+  SELECT
+    sku_id, store_code, event_date,
+    SUM(net_delta) OVER (
+      PARTITION BY sku_id, store_code ORDER BY event_date
+      ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS open_qty
+  FROM daily_events
+),
+-- store_code here is intentionally NOT zero-padded, matching inventory_intermediate's own raw
+-- LOCATION_ID convention (unlike store_intermediate/store_master, which pad to 10 digits).
+balance_with_channel AS (
+  SELECT
+    CONCAT(CAST(db.sku_id AS STRING), '_', lc.channel) AS product_code,
+    db.store_code,
+    db.event_date,
+    db.open_qty
+  FROM daily_balance db
+  JOIN location_channels lc ON LPAD(db.store_code, 10, '0') = lc.location_key
+  WHERE lc.channel IN ('RETAIL', 'ECOMM')
 )
--- Keep the latest snapshot per product_code, store_code, date, and channel.
 SELECT
-  display_product_code,
-  product_code,
-  store_code,
-  date,
-  channel,
-  source_product_code,
-  source_channel,
-  product_code_was_derived,
-  channel_was_derived,
-  oh,
-  it,
-  oo,
-  available_units,
-  DATETIME(snapshot_time) AS syncstartdatetime,
-  DATETIME(snapshot_time) AS created_timestamp
-FROM normalized_inventory
+  i.display_product_code,
+  i.product_code,
+  i.store_code,
+  i.date,
+  i.channel,
+  i.source_product_code,
+  i.source_channel,
+  i.product_code_was_derived,
+  i.channel_was_derived,
+  i.oh,
+  i.it,
+  COALESCE(b.open_qty, 0) AS oo,
+  i.available_units,
+  DATETIME(i.snapshot_time) AS syncstartdatetime,
+  DATETIME(i.snapshot_time) AS created_timestamp
+FROM dedup_inventory i
+LEFT JOIN balance_with_channel b
+  ON i.product_code = b.product_code
+  AND i.store_code = b.store_code
+  AND b.event_date <= i.date
 QUALIFY ROW_NUMBER() OVER (
-  PARTITION BY product_code, store_code, date, channel
-  ORDER BY snapshot_time DESC, oh DESC, it DESC, available_units DESC
+  PARTITION BY i.product_code, i.store_code, i.date
+  ORDER BY b.event_date DESC
 ) = 1;

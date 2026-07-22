@@ -132,11 +132,11 @@ Schema: `lulu_sourcing_dev`
 **Key derivations:**
 - `product_code`: `CONCAT(sku_id, '_', channel)` from **location_details** channel map (not `store_intermediate`)
 - Date window: calendar-year truncate (see shared conventions)
-- `oo`: hardcoded `0`
+- `oo`: **resolved 2026-07-22** — open DC→store `REPLEN`/`ALLOC` transfer-order pipeline from `lulu_sourcing_dev.transfer_orders`, running balance of `+UNITS_ORDERED` on `DATE_CREATED` minus `-UNITS_ORDERED` on `DATE_RECEIVED` (per SKU × store), joined to each inventory row via latest-event-on-or-before-date. `DATE_RECEIVED` is used as the close signal (99.997% populated on REPLEN/ALLOC) instead of `UNITS_SHIPPED`/`DATE_SHIPPED` (<1% populated even when fulfilled — verified by manual spot-check before promoting). **Known limitation:** because there's no reliable ship-date signal, `oo` cannot be cleanly separated from `it` (in-transit) — both draw on the same open pipeline; not resolved, flagged per sign-off. `store_code` join key is intentionally unpadded to match `inventory_intermediate`'s own raw `LOCATION_ID` convention (unlike `store_intermediate`/`store_master`, which zero-pad to 10 digits — this mismatch was the first bug found during verification). Full investigation: [`po_transfer_cleaning_audit.md`](po_transfer_cleaning_audit.md).
 
 **Known cross-feed gap:** inventory channel map yields **100% RETAIL** today (0 ECOMM rows); transactions use `store_intermediate.channel` (114 ECOMM locations). Same suffix convention, different channel source.
 
-**Validated temp tables:** `inventory_intermediate_prechange_tmp_20260717`, `inventory_intermediate_postchange_v2_tmp_20260717`
+**Validated temp tables:** `inventory_intermediate_prechange_tmp_20260717`, `inventory_intermediate_postchange_v2_tmp_20260717`, `inventory_intermediate_postchange_oo_tmp_20260722` (oo formulation — pre/post diff at full 4,424,383,459-row scale: 0 diffs on `oh`/`it`/`available_units`/`display_product_code`/`source_product_code`/`source_channel`/`syncstartdatetime`; `oo` non-zero on 16.38% of rows, range 0–833, avg 0.41, no negatives)
 
 ---
 

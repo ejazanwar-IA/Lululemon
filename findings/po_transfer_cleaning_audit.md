@@ -17,7 +17,7 @@ For the canonical Nov 2025 builds (`*_cleaned_20251119`), the only verified tran
 - **No** join to `store_master` or location master for channel (unlike `sales_transactions_4y_cleaned_20251119`)
 - **No** type casting in the verified SQL (outbound raw is already typed INT64/DATE)
 - **No** deduplication, status filtering, sentinel scrubbing, or grain normalization
-- **No** wiring into any master table today (`inventory_master.oo` / `wip` remain hardcoded 0)
+- **No** wiring into any master table today (`inventory_master.oo` / `wip` remain hardcoded 0); **update 2026-07-22:** `inventory_intermediate.oo` (a level below `inventory_master`) is now wired to `lulu_sourcing_dev.transfer_orders` in the v2 scripts — see R2 below. `wip` is still unresolved.
 
 **Row impact:** both dated cleaned tables are exactly **2.00×** their raw `_20251119` sources.
 
@@ -79,7 +79,7 @@ flowchart TD
   toProc[transfer_orders_processed]
   toNewClean[transfer_orders_new_cleaned]
   toProcClean[transfer_orders_processed_cleaned]
-  master[inventory_master oo/wip = 0]
+  master[inventory_intermediate oo = open REPLEN/ALLOC pipeline, wip = 0]
 
   gcsPO --> devPO
   gcsTO --> devTO
@@ -89,8 +89,9 @@ flowchart TD
   rawTO -->|"CROSS JOIN ECOMM/RETAIL"| cleanTO
   toNew --> toNewClean
   toProc --> toProcClean
-  cleanPO -.->|"not wired"| master
-  cleanTO -.->|"not wired"| master
+  cleanPO -.->|"not wired (PO is DC-grain only)"| master
+  cleanTO -.->|"not wired (2x-doubled cleaned variant unused)"| master
+  devTO -->|"oo formulation, 2026-07-22"| master
 ```
 
 ---
@@ -279,14 +280,14 @@ Every raw row becomes two cleaned rows (`_ECOMM` and `_RETAIL`) regardless of ac
 
 **Contrast:** `sales_transactions_4y_cleaned_20251119` derives channel from `store_master` join (one row per transaction, real channel). PO/transfer cleaning does not.
 
-### R2. No master wiring (critical)
+### R2. No master wiring (critical) — `oo` resolved 2026-07-22, `wip` still open
 
 Per [`master_table_build_logic.md`](master_table_build_logic.md):
 
-- `inventory_master.oo` = **hardcoded 0**
-- `inventory_master.wip` = **hardcoded 0**
+- `inventory_intermediate.oo` = **resolved 2026-07-22** in the v2 build (`create_inventory_intermediate_historic_v2.sql` and `create_inventory_intermediate_periodic.sql`) — open `REPLEN`/`ALLOC` transfer-order pipeline from `lulu_sourcing_dev.transfer_orders` (live raw, not `purchase_orders_cleaned_20251119`/`transfer_orders_cleaned_20251119`, per this doc's own R1/R4 warnings), running balance closed on `DATE_RECEIVED` rather than `UNITS_SHIPPED`/`DATE_SHIPPED` (the latter populated on <1% of rows even when clearly fulfilled). Verified against the live 4.42B-row table: 0 diffs on every other column. **Not yet promoted to the live table** — script-only change pending a separate promotion step. See [`lululemon_intermediate_builds_v2_reference.md`](lululemon_intermediate_builds_v2_reference.md) Section 3 for the full formulation and its known `oo`/`it` overlap limitation.
+- `inventory_intermediate.wip` = **still hardcoded 0** — not addressed by this change; PO data was ruled out as a source at store grain (its `location_id_receiving` are DC codes only, confirmed by join against `store_intermediate.dc_flag`), and no other WIP signal has been identified yet.
 
-PO and transfer cleaned tables are listed as **future candidates** in [`raw_to_master_lineage.md`](raw_to_master_lineage.md) but never consumed.
+PO and transfer cleaned tables (the `_cleaned_20251119` outbound variants) remain future candidates for other use cases per [`raw_to_master_lineage.md`](raw_to_master_lineage.md), but are still never consumed as-is — the `oo` formulation above reads `lulu_sourcing_dev.transfer_orders` directly, bypassing the 2x-channel-doubled cleaned variants entirely.
 
 ### R3. Receipt spec mismatch (high)
 
