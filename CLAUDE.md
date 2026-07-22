@@ -25,6 +25,12 @@ When asked to scan, check, or verify raw files in the GCS bucket (`gs://client_d
 - If the one-shard gate is ambiguous, use a BQ external table on `gs://.../prefix*` with a single `COUNTIF` aggregate instead of downloading everything.
 - Generalize `scripts/sku_details_price_scan.py` (or add a sibling script) for other feeds (`inventory_snapshot`, `sales_transactions`, etc.) rather than inventing a one-off full-file read.
 
+## Intermediate build logic: single source of truth
+
+Any change to intermediate table build logic (`product_intermediate`, `store_intermediate`, `inventory_intermediate`, `transaction_intermediate`) must be made in `queries/Intermediate_table_builds/` (historic v2 SQL) and the matching periodic script in `queries/sourcing/`, then **committed and pushed to `main`** on [github.com/ejazanwar-IA/lululemon-forecasting-engagement](https://github.com/ejazanwar-IA/lululemon-forecasting-engagement) in the same turn — that repo path is the canonical source of truth, not a local-only edit or a `_tmp` table. Do not leave intermediate-logic changes uncommitted or unpushed once verified; do not fork the logic into a different path or a one-off script elsewhere in the repo.
+
+This doesn't relax the v2 hard rules (no live promotion without a `_tmp` pre/post comparison; periodic scripts updated in the same change set) — it's in addition to them. See [lululemon-intermediate-builds-v2](.claude/skills/lululemon-intermediate-builds-v2/SKILL.md) for the build-order and verification rules themselves.
+
 ## Table list formatting
 
 When listing Lululemon database tables in chat, docs, or generated markdown: put the schema/dataset in the column header, not repeated per row; use bare table names unless fully qualified names are explicitly requested; skip the project name by default since `lululemon-01042025` is the assumed project. Header style: `Raw table (lulu_sourcing_dev)`, `Intermediate table (lulu_sourcing_dev)`, `Outbound table (lululemon_souricng_outbound)`.

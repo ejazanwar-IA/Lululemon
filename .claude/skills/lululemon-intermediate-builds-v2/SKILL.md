@@ -5,7 +5,7 @@ description: Canonical v2 intermediate build logic for Lululemon product, store,
 
 # Lululemon intermediate builds v2 (locked reference)
 
-`Locked: 2026-07-17.` `product_intermediate.color_family` resolved 2026-07-21 (validated on `_tmp_` only, not yet promoted to live).
+`Locked: 2026-07-17.` `product_intermediate.color_family` resolved 2026-07-21 (validated on `_tmp_` only, not yet promoted to live). `inventory_intermediate.oo` resolved 2026-07-22 (validated on `_tmp_` at full 4.42B-row scale, script committed to GitHub, not yet promoted to live).
 
 ## Source of truth
 
@@ -36,6 +36,7 @@ store → product → (inventory parallel) → transaction (needs product + stor
 3. **No live promotion without `_tmp_` pre/post comparison** unless the user explicitly asks to rebuild production tables.
 4. **Blocked stubs stay blocked** until the reference doc and user sign-off say otherwise (e.g. `cost`, `location_attrib_squareft`, `special_classification`). `color_family` resolved 2026-07-21 — see below.
 5. **Periodic scripts** must be updated in the same change set when historic v2 logic changes.
+6. **GitHub is the source of truth.** Any change to these files must be committed and pushed to `main` on [github.com/ejazanwar-IA/lululemon-forecasting-engagement](https://github.com/ejazanwar-IA/lululemon-forecasting-engagement) in the same turn once verified — don't leave a verified change sitting locally-only or only as a `_tmp` BigQuery table.
 
 ## Quick blocked-column reminder
 
@@ -43,6 +44,7 @@ store → product → (inventory parallel) → transaction (needs product + stor
 |---|---|
 | Store | `location_attrib_squareft` (0), `special_classification` (NULL) |
 | Product | none remaining — `color_family` resolved 2026-07-21 via `product_attribute_so.COLOUR_FAMILY` bridged through `style_option` (STRING, ~92% fill; see `findings/product_intermediate_color_family_source_found.md`) |
+| Inventory | `wip` (0, no source identified yet). `oo` resolved 2026-07-22 — open `REPLEN`/`ALLOC` transfer-order pipeline from `lulu_sourcing_dev.transfer_orders`, closed on `DATE_RECEIVED` (see `findings/po_transfer_cleaning_audit.md` R2 and `findings/lululemon_intermediate_builds_v2_reference.md` Section 3). Known limitation: cannot be cleanly separated from `it` (in-transit) — no reliable ship-date signal exists. |
 | Transaction | `cost` (zero feed), `launch_price`, `line_id`, freight/workstream/discount-adjacent stubs listed in v2 SQL header |
 
 When answering lineage or build questions, cite the reference doc and the relevant v2 SQL file; do not reconstruct logic from memory or old platform CSVs.
