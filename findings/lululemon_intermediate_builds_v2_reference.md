@@ -53,10 +53,10 @@ Schema: `lulu_sourcing_dev`
 
 | Intermediate | Historic v2 SQL | v1 baseline | Grain | Rows (Jul 2026) |
 |---|---|---|---:|---:|
-| `store_intermediate` | [`create_store_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_store_intermediate_historic_v2.sql) | [`create_store_intermediate_historic.sql`](../queries/Intermediate_table_builds/create_store_intermediate_historic.sql) | 1 row / `store_code` | 1,853 |
-| `product_intermediate` | [`create_product_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_product_intermediate_historic_v2.sql) | [`create_product_intermediate_historic.sql`](../queries/Intermediate_table_builds/create_product_intermediate_historic.sql) | 1 row / `product_code` | 1,977,528 |
-| `inventory_intermediate` | [`create_inventory_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_inventory_intermediate_historic_v2.sql) | [`create_inventory_intermediate_historic.sql`](../queries/Intermediate_table_builds/create_inventory_intermediate_historic.sql) | 1 row / `product_code`, `store_code`, `date`, `channel` | ~4.4B (windowed) |
-| `transaction_intermediate` | [`create_transaction_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_transaction_intermediate_historic_v2.sql) | [`create_transaction_intermediate_historic.sql`](../queries/Intermediate_table_builds/create_transaction_intermediate_historic.sql) | 1 row / txn grain | ~198M (windowed) |
+| `store_intermediate` | [`create_store_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_store_intermediate_historic_v2.sql) | [`create_store_intermediate_historic.sql`](../queries/Intermediate_table_builds_v1/create_store_intermediate_historic.sql) | 1 row / `store_code` | 1,853 |
+| `product_intermediate` | [`create_product_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_product_intermediate_historic_v2.sql) | [`create_product_intermediate_historic.sql`](../queries/Intermediate_table_builds_v1/create_product_intermediate_historic.sql) | 1 row / `product_code` | 1,977,528 |
+| `inventory_intermediate` | [`create_inventory_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_inventory_intermediate_historic_v2.sql) | [`create_inventory_intermediate_historic.sql`](../queries/Intermediate_table_builds_v1/create_inventory_intermediate_historic.sql) | 1 row / `product_code`, `store_code`, `date`, `channel` | ~4.4B (windowed) |
+| `transaction_intermediate` | [`create_transaction_intermediate_historic_v2.sql`](../queries/Intermediate_table_builds/create_transaction_intermediate_historic_v2.sql) | [`create_transaction_intermediate_historic.sql`](../queries/Intermediate_table_builds_v1/create_transaction_intermediate_historic.sql) | 1 row / txn grain | ~198M (windowed) |
 
 ---
 

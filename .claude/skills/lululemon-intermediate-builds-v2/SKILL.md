@@ -23,7 +23,7 @@ Read **`findings/lululemon_intermediate_builds_v2_reference.md`** first. Executa
 - `queries/store_master_intermediate_build.sql`
 - `queries/transaction_intermediate_build.sql`
 - `queries/inventory_intermediate_build.sql`
-- v1 `create_*_intermediate_historic.sql` (baseline for diff only)
+- v1 `queries/Intermediate_table_builds_v1/create_*_intermediate_historic.sql` (baseline for diff only — moved out of `Intermediate_table_builds/` on 2026-07-22 so that directory holds only current v2 logic)
 
 ## Build order
 
