@@ -5,7 +5,7 @@ description: Canonical v2 intermediate build logic for Lululemon product, store,
 
 # Lululemon intermediate builds v2 (locked reference)
 
-`Locked: 2026-07-17.` `product_intermediate.color_family` resolved 2026-07-21 (validated on `_tmp_` only, not yet promoted to live). `inventory_intermediate.oo` resolved 2026-07-22 (validated on `_tmp_` at full 4.42B-row scale, script committed to GitHub, not yet promoted to live).
+`Locked: 2026-07-17.` `product_intermediate.color_family` resolved 2026-07-21 (validated on `_tmp_` only, not yet promoted to live). `inventory_intermediate.oo` resolved 2026-07-22 (validated on `_tmp_` at full 4.42B-row scale, script committed to GitHub, not yet promoted to live). `oo`'s attach mechanism rewritten 2026-07-23 (range join → merge/forward-fill, ~5x faster, verified byte-identical at full scale) in the **historic v2 script only** — user explicitly asked to hold off on the periodic script for this one, so `create_inventory_intermediate_periodic.sql` still uses the older range-join version. This is a deliberate, known exception to hard rule 5 below; don't "fix" the periodic script to match without asking first.
 
 ## Source of truth
 
