@@ -69,7 +69,7 @@ inventory_enriched AS (
     derived_channel
   FROM cleaned_inventory i
   LEFT JOIN `lululemon-01042025.lulu_sourcing_dev.location_details` ld
-    ON LPAD(CAST(i.LOCATION_ID AS STRING), 10, '0') = LPAD(CAST(ld.ID AS STRING), 10, '0')
+    ON i.LOCATION_ID = ld.ID
   CROSS JOIN UNNEST([CASE
     WHEN UPPER(COALESCE(ld.TYPE_CODE, '')) = 'RETAIL'
       OR UPPER(COALESCE(ld.CHANNEL_CODE, '')) LIKE '%_RTL'
@@ -147,7 +147,7 @@ daily_balance AS (
     ) AS open_qty
   FROM daily_events
 ),
--- store_code stays unpadded here to match inventory_intermediate's own convention (store_master pads to 10 digits).
+-- store_code and location_key are both raw unpadded STRING here -- verified no leading-zero variants exist in source.
 balance_with_channel AS (
   SELECT
     CONCAT(CAST(db.sku_id AS STRING), '_', ld_chan.channel) AS product_code,
@@ -157,7 +157,7 @@ balance_with_channel AS (
   FROM daily_balance db
   JOIN (
     SELECT
-      LPAD(CAST(ID AS STRING), 10, '0') AS location_key,
+      ID AS location_key,
       CASE
         WHEN UPPER(COALESCE(TYPE_CODE, '')) = 'RETAIL'
           OR UPPER(COALESCE(CHANNEL_CODE, '')) LIKE '%_RTL'
@@ -168,10 +168,10 @@ balance_with_channel AS (
       END AS channel
     FROM `lululemon-01042025.lulu_sourcing_dev.location_details`
     QUALIFY ROW_NUMBER() OVER (
-      PARTITION BY LPAD(CAST(ID AS STRING), 10, '0')
+      PARTITION BY ID
       ORDER BY SYNCSTARTDATETIME DESC, ID DESC
     ) = 1
-  ) ld_chan ON LPAD(db.store_code, 10, '0') = ld_chan.location_key
+  ) ld_chan ON db.store_code = ld_chan.location_key
   WHERE ld_chan.channel IN ('RETAIL', 'ECOMM')
 ),
 -- Attach oo via asof-join and dedupe (QUALIFY keeps only the latest matching event_date per row).

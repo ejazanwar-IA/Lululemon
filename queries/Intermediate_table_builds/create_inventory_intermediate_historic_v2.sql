@@ -19,9 +19,10 @@ typed_inventory AS (
   FROM `lululemon-01042025.lulu_sourcing_dev.inventory_snapshot`
 ),
 -- Map each location to one RETAIL or ECOMM channel; dedupe location_details to one row per location_key.
+-- location_key is the raw ID (STRING, unpadded) -- verified no leading-zero variants exist in source.
 location_channels AS (
   SELECT
-    LPAD(CAST(ID AS STRING), 10, '0') AS location_key,
+    ID AS location_key,
     CASE
       WHEN UPPER(COALESCE(TYPE_CODE, '')) = 'RETAIL'
         OR UPPER(COALESCE(CHANNEL_CODE, '')) LIKE '%_RTL'
@@ -32,7 +33,7 @@ location_channels AS (
     END AS channel
   FROM `lululemon-01042025.lulu_sourcing_dev.location_details`
   QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY LPAD(CAST(ID AS STRING), 10, '0')
+    PARTITION BY ID
     ORDER BY SYNCSTARTDATETIME DESC, ID DESC
   ) = 1
 ),
@@ -54,7 +55,7 @@ normalized_inventory AS (
     i.snapshot_time
   FROM typed_inventory i
   INNER JOIN location_channels lc
-    ON LPAD(CAST(i.location_id AS STRING), 10, '0') = lc.location_key
+    ON i.location_id = lc.location_key
   WHERE i.sku_id IS NOT NULL
     AND i.location_id IS NOT NULL
     AND i.location_id != ''
@@ -118,7 +119,7 @@ balance_with_channel AS (
     db.event_date,
     db.open_qty
   FROM daily_balance db
-  JOIN location_channels lc ON LPAD(db.store_code, 10, '0') = lc.location_key
+  JOIN location_channels lc ON db.store_code = lc.location_key
   WHERE lc.channel IN ('RETAIL', 'ECOMM')
 )
 SELECT
