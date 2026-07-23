@@ -45,10 +45,6 @@ normalized_inventory AS (
     i.location_id AS store_code,
     i.inventory_date AS date,
     lc.channel,
-    CONCAT(CAST(i.sku_id AS STRING), '_', lc.channel) AS source_product_code,
-    lc.channel AS source_channel,
-    FALSE AS product_code_was_derived,
-    FALSE AS channel_was_derived,
     COALESCE(i.units_on_hand, 0) AS oh,
     COALESCE(i.units_inbound, 0) AS it,
     COALESCE(i.units_available, 0) AS available_units,
@@ -67,7 +63,6 @@ normalized_inventory AS (
 dedup_inventory AS (
   SELECT
     display_product_code, product_code, store_code, date, channel,
-    source_product_code, source_channel, product_code_was_derived, channel_was_derived,
     oh, it, available_units, snapshot_time
   FROM normalized_inventory
   QUALIFY ROW_NUMBER() OVER (
@@ -127,14 +122,12 @@ balance_with_channel AS (
 timeline AS (
   SELECT
     product_code, store_code, date, FALSE AS is_balance_row, CAST(NULL AS INT64) AS oo_event,
-    display_product_code, channel, source_product_code, source_channel,
-    product_code_was_derived, channel_was_derived, oh, it, available_units, snapshot_time
+    display_product_code, channel, oh, it, available_units, snapshot_time
   FROM dedup_inventory
   UNION ALL
   SELECT
     product_code, store_code, event_date AS date, TRUE, open_qty,
-    CAST(NULL AS STRING), CAST(NULL AS STRING), CAST(NULL AS STRING), CAST(NULL AS STRING),
-    CAST(NULL AS BOOL), CAST(NULL AS BOOL), CAST(NULL AS INT64), CAST(NULL AS INT64), CAST(NULL AS INT64), CAST(NULL AS TIMESTAMP)
+    CAST(NULL AS STRING), CAST(NULL AS STRING), CAST(NULL AS INT64), CAST(NULL AS INT64), CAST(NULL AS INT64), CAST(NULL AS TIMESTAMP)
   FROM balance_with_channel
 ),
 -- Carry the last known balance forward onto every inventory row for that key.
@@ -154,10 +147,6 @@ SELECT
   store_code,
   date,
   channel,
-  source_product_code,
-  source_channel,
-  product_code_was_derived,
-  channel_was_derived,
   oh,
   it,
   COALESCE(oo, 0) AS oo,
