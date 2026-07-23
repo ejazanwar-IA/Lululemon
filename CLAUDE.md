@@ -31,6 +31,10 @@ Any change to intermediate table build logic (`product_intermediate`, `store_int
 
 This doesn't relax the v2 hard rules (no live promotion without a `_tmp` pre/post comparison; periodic scripts updated in the same change set) — it's in addition to them. See [lululemon-intermediate-builds-v2](.claude/skills/lululemon-intermediate-builds-v2/SKILL.md) for the build-order and verification rules themselves.
 
+## SQL table aliases
+
+When writing SQL, alias tables with a short mnemonic derived from the table's name/role (e.g. `product_intermediate AS pi`, `store_master AS sm`, `sales_transactions AS st`, `inventory_intermediate AS inv`), not arbitrary single letters like `a`, `b`, `c`. In multi-CTE queries, keep the same alias for the same table across the query for readability.
+
 ## Table list formatting
 
 When listing Lululemon database tables in chat, docs, or generated markdown: put the schema/dataset in the column header, not repeated per row; use bare table names unless fully qualified names are explicitly requested; skip the project name by default since `lululemon-01042025` is the assumed project. Header style: `Raw table (lulu_sourcing_dev)`, `Intermediate table (lulu_sourcing_dev)`, `Outbound table (lululemon_souricng_outbound)`.
