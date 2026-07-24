@@ -93,15 +93,14 @@ Schema: `lulu_sourcing_dev`
 **Sources:** `product_group_hierarchy`, `sku_details`, `product_attribute_s`, `eligibility`, `product_attribute_so`, `style_option` (`color_family` only, added 2026-07-21)
 
 **CTE flow:**
-- `pgh_pivot` — EAV pivot to wide hierarchy per `SKU_ID`
-- `pgh_cleaned` — `CROSS JOIN UNNEST(['ECOMM','RETAIL'])` → `sku_id_code`
+- `pgh_pivot` — EAV pivot to wide hierarchy per `SKU_ID`; **now the final join spine directly** (channel expansion removed 2026-07-24, see below)
 - `pso_launch_dates` — `MIN(WP_FIRST_SELLING_DAY_ID)` at PSO grain
 - `color_family_lookup` — `product_attribute_so.COLOUR_FAMILY` bridged to PSO grain via `style_option` (added 2026-07-21)
 - Join `sku_details` on `SKU_ID` only (no sku-side channel cross join)
 
 **Key derivations:**
-- `product_code`: `{SKU_ID}_{channel}`
-- `article` / `l8_id`: `{PLANNING_STYLE_OPTION_CODE}_{channel}`
+- `product_code`: bare `{SKU_ID}` (was `{SKU_ID}_{channel}` before 2026-07-24)
+- `article` / `l8_id`: bare `{PLANNING_STYLE_OPTION_CODE}` (was `{PLANNING_STYLE_OPTION_CODE}_{channel}` before 2026-07-24)
 - `article_status` / `active_flag`: mapped from `product_attribute_s.FLEX_STATUS` (Active→ACTIVE/1; Drop/Inactive/Hold→mapped/0)
 - `ordering`: `SAFE_CAST(sku_details.SIZE_RANK AS INT64)` (100% fill)
 - `launch_date`: eligibility PSO min first-sell (~53.53% row fill)
@@ -113,9 +112,11 @@ Schema: `lulu_sourcing_dev`
 
 **Still blocked (product):** none remaining as of 2026-07-21.
 
-**Post-rebuild fill highlights (1,977,528 rows):** `flex_status` 95.57%; `ordering` 100%; `launch_date` 53.53%; `gender` 26.57% (`PRODUCT_GENDER`); `color_family` 92.18% (added 2026-07-21); Drop styles 28.93% at SKU×channel
+**Channel dropped 2026-07-24:** removed the `pgh_cleaned` CTE (`CROSS JOIN UNNEST(['ECOMM','RETAIL'])`). Every product attribute (hierarchy, size, color, season, status, gender, …) was already identical across the ECOMM/RETAIL copies of a SKU — channel only ever changed the `_ECOMM`/`_RETAIL` suffix on `product_code`/`article`/`l8_id` and the `l1_name` value (which literally *was* the channel string). Grain is now **1 row per `SKU_ID`** (was 2, SKU × channel); `product_code` is a bare `SKU_ID`; `l1_name` is `NULL` (no remaining source for it). **This breaks the `{SKU_ID}_{channel}` product-key format `inventory_intermediate`/`transaction_intermediate` currently expect when joining to product — not reconciled, deliberately deferred** (user's call: fix `product_intermediate` now, handle downstream joins in a later pass, same pattern as the `inventory_intermediate.oo` periodic deferral).
 
-**Validated temp tables:** `product_intermediate_prechange_tmp_20260717`, `product_intermediate_postchange_v2_tmp_20260717`, `product_intermediate_baseline_v2_tmp_20260721` (unedited v2, fresh raw data), `product_intermediate_postchange_v2_tmp_20260721` (with `color_family`) — 2026-07-21 comparison isolated the change cleanly: 0 rows differing on any other column, `color_family` 0% → 92.18%, 0 duplicate/conflicting `product_code`s. Note: `product_intermediate_prechange_tmp_20260721` (a snapshot of the *live* table) also confirmed the live table itself is stale versus fresh v2 output (e.g. `ordering` and `gender` already differed from a fresh run, unrelated to this change) — consistent with the "live tables not yet rebuilt to v2" status tracked separately.
+**Post-rebuild fill highlights (1,977,528 rows, pre-2026-07-24 grain):** `flex_status` 95.57%; `ordering` 100%; `launch_date` 53.53%; `gender` 26.57% (`PRODUCT_GENDER`); `color_family` 92.18% (added 2026-07-21); Drop styles 28.93% at SKU×channel. Post-channel-drop: 988,764 rows (one per SKU), same fill rates on the surviving columns.
+
+**Validated temp tables:** `product_intermediate_prechange_tmp_20260717`, `product_intermediate_postchange_v2_tmp_20260717`, `product_intermediate_baseline_v2_tmp_20260721` (unedited v2, fresh raw data), `product_intermediate_postchange_v2_tmp_20260721` (with `color_family`) — 2026-07-21 comparison isolated the change cleanly: 0 rows differing on any other column, `color_family` 0% → 92.18%, 0 duplicate/conflicting `product_code`s. Note: `product_intermediate_prechange_tmp_20260721` (a snapshot of the *live* table) also confirmed the live table itself is stale versus fresh v2 output (e.g. `ordering` and `gender` already differed from a fresh run, unrelated to this change) — consistent with the "live tables not yet rebuilt to v2" status tracked separately. `product_intermediate_postchange_nochannel_tmp_20260724` (channel-drop) — diffed a fresh prechange rebuild's RETAIL rows against this table: 988,764/988,764 matched, 0 diffs on any shared column; separately confirmed RETAIL and ECOMM rows in the prechange rebuild were already 100% identical on every real attribute before the drop (0 diffs), so no channel-dependent data was lost by collapsing to one row.
 
 ---
 

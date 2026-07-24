@@ -28,16 +28,6 @@ pgh_pivot AS (
   FROM `lululemon-01042025.lulu_sourcing_dev.product_group_hierarchy`
   GROUP BY SKU_ID
 ),
--- Duplicate each SKU for ECOMM and RETAIL so product_code matches txn/inventory suffix convention.
--- Builds sku_id_code as {SKU_ID}_{channel}, the grain of product_intermediate.
-pgh_cleaned AS (
-  SELECT
-    p.*,
-    channel,
-    CONCAT(CAST(p.SKU_ID AS STRING), '_', channel) AS sku_id_code
-  FROM pgh_pivot p
-  CROSS JOIN UNNEST(['ECOMM', 'RETAIL']) AS channel
-),
 -- Collapse eligibility (PSO x store x week) to one earliest first-selling day per style option.
 -- Joined on article_original (PLANNING_STYLE_OPTION_CODE) to populate launch_date (~54% row fill).
 pso_launch_dates AS (
@@ -65,13 +55,18 @@ color_family_lookup AS (
     AND TRIM(pas.COLOUR_FAMILY) NOT IN ('', '\\N')
 )
 -- Join PGH spine to sku_details, product_attribute_s, and PSO launch dates; project intermediate columns.
+-- Channel dropped 2026-07-23 -- product attributes don't vary by channel, so product_intermediate is now
+-- one row per SKU_ID (no more ECOMM/RETAIL duplication). product_code is a bare SKU_ID, not {SKU_ID}_{channel}.
+-- l1_name previously carried the channel value; there's no longer a source for it, so it's NULL.
+-- NOTE: this breaks the {SKU_ID}_{channel} product_code format inventory_intermediate/transaction_intermediate
+-- currently expect when joining to product -- not reconciled yet, deliberately deferred (product-only fix for now).
 SELECT
-  a.sku_id_code AS product_code,
-  SPLIT(a.sku_id_code, '_')[SAFE_OFFSET(0)] AS product_code_original,
-  CONCAT(a.PLANNING_STYLE_OPTION_CODE, '_', SPLIT(a.sku_id_code, '_')[SAFE_OFFSET(1)]) AS article,
+  CAST(a.SKU_ID AS STRING) AS product_code,
+  CAST(a.SKU_ID AS STRING) AS product_code_original,
+  a.PLANNING_STYLE_OPTION_CODE AS article,
   a.PLANNING_STYLE_OPTION_CODE AS article_original,
   a.BRAND_NAME AS l0_name,
-  SPLIT(a.sku_id_code, '_')[SAFE_OFFSET(1)] AS l1_name,
+  CAST(NULL AS STRING) AS l1_name,
   a.DIVISION_NAME AS l2_name,
   a.DEPARTMENT_NAME AS l3_name,
   a.CLASS_NAME AS l4_name,
@@ -86,7 +81,7 @@ SELECT
   a.SUBCLASS_CODE AS l5_id,
   a.MASTER_STYLE_CODE AS l6_id,
   a.STYLE_CODE AS l7_id,
-  CONCAT(a.PLANNING_STYLE_OPTION_CODE, '_', SPLIT(a.sku_id_code, '_')[SAFE_OFFSET(1)]) AS l8_id,
+  a.PLANNING_STYLE_OPTION_CODE AS l8_id,
   a.PLANNING_STYLE_SIZE_NAME AS product_name,
   b.DESCRIPTION AS product_description,
   b.SIZE_NAME AS size,
@@ -128,7 +123,7 @@ SELECT
   c.PRODUCT_DEVELOPMENT_POD AS product_development_pod,
   c.PRODUCT_SIZE_DEFINITION AS product_size_definition,
   c.GLOBAL_LINE_SEGMENT_STYLE_CATEGORY AS global_line_segment_style_category
-FROM pgh_cleaned a
+FROM pgh_pivot a
 LEFT JOIN `lululemon-01042025.lulu_sourcing_dev.sku_details` b
   ON CAST(a.SKU_ID AS STRING) = CAST(b.ID AS STRING)
 LEFT JOIN `lululemon-01042025.lulu_sourcing_dev.product_attribute_s` c
@@ -137,4 +132,4 @@ LEFT JOIN pso_launch_dates ld
   ON a.PLANNING_STYLE_OPTION_CODE = ld.article_original
 LEFT JOIN color_family_lookup cfl
   ON a.PLANNING_STYLE_OPTION_CODE = cfl.PLANNING_STYLE_OPTION_ID
-WHERE a.sku_id_code IS NOT NULL;
+WHERE a.SKU_ID IS NOT NULL;
