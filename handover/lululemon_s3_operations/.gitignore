@@ -1,0 +1,4 @@
+config/lulu_dev_s3.env
+config/.lulu_s3_ca_bundle.pem
+config/.lulu_bq_load_manifest.json
+scripts/__pycache__/
