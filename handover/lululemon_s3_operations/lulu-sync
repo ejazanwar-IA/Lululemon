@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PACKAGE_ROOT="$(cd "$(dirname "$0")" && pwd)"
+export LULU_S3_ENV_FILE="$PACKAGE_ROOT/config/lulu_dev_s3.env"
+exec python3 "$PACKAGE_ROOT/scripts/lulu_s3_to_gcs_sync_concurrent.py" "$@"
